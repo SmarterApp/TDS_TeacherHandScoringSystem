@@ -1,0 +1,40 @@
+﻿@{
+    ViewBag.LogoutURL = Request.Cookies["LogoutURL"] != null ? Request.Cookies["LogoutURL"].Value : "https://drc-dev-secure.opentestsystem.org/auth/UI/Logout";
+    ViewBag.GivenName = TSS.MVC.UserAttributes.SAML.Mail;
+}
+<script type="text/javascript">
+
+     $(function () {
+         $("#btnLogout").on("click", function (e) {
+             var target = e.target || e.srcElement;
+             //DELETE COOKIE
+             document.cookie = "HASRUN=false; expires=Thu, 1 Jan 2014 12:00:00 UTC; path=/";
+             document.cookie = "TSS-MAIL=; expires=Thu, 1 Jan 2014 12:00:00 UTC; path=/";
+             document.cookie = "TSS-UUID=; expires=Thu, 1 Jan 2014 12:00:00 UTC; path=/";
+             //REDIRECT
+             window.location.href = target.href;
+
+             e.preventDefault();
+             e.stopImmediatePropagation();
+             return false;
+         });
+     });
+</script>
+
+<header>
+    <div class="navbar navbar-fixed-top">
+        <div class="top-navbar">
+            <span class="top-navbar-text">
+                <a class="navbar-link hide-control" href="#">Settings</a>Logged in as @ViewBag.GivenName | <a class="navbar-link" href="@System.Configuration.ConfigurationManager.AppSettings["USER_GUIDE_LOCATION"]" >Help</a> | <a class="navbar-link" id="btnLogout" href="@ViewBag.LogoutURL">Logout</a>
+            </span>
+        </div>
+        <div class="navbar-inner navbar-title">
+            <a class="brand" href="/home/itemlist">
+                <img alt="AIR Logo" src="@Url.Content("~/Images/Logo.png")" />
+                <span class="brandTitle">Teacher Hand Scoring System - @ViewBag.Title</span></a>
+
+
+        </div>
+    </div>
+    <!-- topbar / NavBar ends -->
+</header>

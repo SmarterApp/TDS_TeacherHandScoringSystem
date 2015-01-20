@@ -1,0 +1,277 @@
+﻿@using TSS.Domain
+@model TSS.MVC.Models.ItemConfigurationViewModel
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Add Item to Item Repository</title>
+
+    <link id="bs-css" href="~/Content/bootstrap.css" rel="stylesheet">
+    <link href="~/Content/bootstrap-responsive.css" rel="stylesheet">
+    <link href="~/Content/svtheme-app.css" rel="stylesheet">
+    <link href="~/Content/site.css" rel="stylesheet">
+    <link href="~/Content/jquery-ui-1.10.3.redmond.min.css" rel="stylesheet">
+    <link href="~/Content/jquery.jqGrid/ui.jqgrid.css" rel="stylesheet">
+    <link href="~/Content/chosen.css" rel="stylesheet">
+    <link href="~/Content/colorbox.css" rel="stylesheet">
+    <link href="~/Content/jquery.cleditor.css" rel="stylesheet">
+    <link href="~/Content/jquery.noty.css" rel="stylesheet">
+    <link href="~/Content/noty_theme_default.css" rel="stylesheet">
+    <link href="~/Content/elfinder.min.css" rel="stylesheet">
+    <link href="~/Content/elfinder.theme.css" rel="stylesheet">
+    <link href="~/Content/jquery.iphone.toggle.css" rel="stylesheet">
+    <link href="~/Content/opa-icons.css" rel="stylesheet">
+    <link href="~/Content/uploadify.css" rel="stylesheet">
+    <link href="~/Content/select2.css" rel="stylesheet" />
+    <link href="~/Content/select2-bootstrap.css" rel="stylesheet" />
+    <script type="text/javascript" src="http://code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/head.js"> </script>
+    <script type="text/javascript" src="~/Scripts/select2.js"> </script>
+    <script type="text/javascript">
+        $(document).ready(
+            function() {
+                $("input[name=itemRepoRubricChoice]").change(function() {
+                    var checked = $(this).val();
+                    if (checked == 'Rubric') {
+                        $('#itemRepoRubricText').show();
+                        $('#itemRepoRubricUploadDiv').show();
+                        $('#itemRepoDimensionScoresDiv').hide();
+                    } else {
+                        $('#itemRepoRubricUploadDiv').hide();
+                        $('#itemRepoDimensionScoresDiv').show();
+                        $('#itemRepoRubricText').hide();
+                    }
+                });
+
+                {
+                    $('#itemRepoConditionCodes').select2(
+                    {
+                        placeholder: "Input condition codes, use a comma or space after each code",
+                        tokenSeparators: [",", " "],
+                        tags: ["test", "test2", "test3"]
+                    });
+                }
+                {
+                    var newRow = "<tr><td><input id='dimScoreTableDimension' name='dimScoreTableDimension' type='text' placeholder='Insert Dimension here' class='input-medium'></td><td><input id='dimScoreTableMinPoints' name='dimScoreTableMinPoints' type='text' placeholder='Min Points' class='input-small'></td><td><input id='dimScoreTableMaxPoints' name='dimScoreTableMaxPoints' type='text' placeholder='Max Points' class='input-small'></td><td><button id='dimScoreTableDelete' name='dimScoreTableDelete' class='btn btn-default'>Delete</button></td></tr>";
+                    $("#dimScoreTableAddRow").click(function() {
+                        $("#dimScoreTable").append(newRow);
+                        return false;
+                    });
+                }
+                {
+                    $("#dimScoreTableDelete").click(function() {
+                        $(this).parents('tr').first().remove();
+                    });
+                }
+            });
+    </script>
+    <style type ="text/css">
+        #itemRepoAddForm {
+            margin-top: 75px;
+
+        }
+        #itemRepoAddForm h3 {
+            margin-left: auto;
+            margin-right: auto;
+            width: 100%;
+            text-align: center;
+        }
+
+        #itemRepoDimensionScoresDiv {
+        display: none;
+        width: 50%;
+            margin-left: 50px;
+        }
+
+        #itemRepoSelectedScore
+    {
+        float: right;
+        margin-right: 20%;
+    }
+        #itemRepoSelections {
+        float: left;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="navbar navbar-fixed-top">
+            <div class="navbar-inner">
+                <a class="brand" href="/home/itemlist">
+                    <img alt="AIR Logo" src="Images/Logo.png" />
+                    <span>Student Scoring Dashboard - Prototype</span>
+                </a>
+
+                <!-- user dropdown starts -->
+                <div class="btn-group pull-right">
+                    <a class="btn dropdown-toggle" href="#">Home</a>
+                    <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+                        <i class="icon-user"></i><span class="hidden-phone"> John Q. Teacher</span>
+                        <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#">Profile</a></li>
+                        <li class="divider"></li>
+                        <li><a href="login.html">Logout</a></li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+    </header>
+
+    <form class="form-horizontal" id="itemRepoAddForm">
+        <fieldset>
+            @{ if(Model.item == null){
+            <div class="header" id="itemRepoAddHeader">
+                <h3>Add Item</h3>
+            </div>
+            }else{
+            <div class="header" id="itemRepoEditHeader">
+                <h3>Edit Item</h3>
+            </div>
+            }}
+            <div id="itemRepoSelectedScore">
+                <div id="itemRepoRubricText" class="control-group">
+                    <label class="control-label" for="itemRepoRubricTextArea">Rubric Text</label>
+                    <div class="controls">
+                        <textarea id="itemRepoRubricTextArea" rows="10">Rubric Data from the uploaded XML will be displayed in this textbox.</textarea>
+                    </div>
+                </div>
+            </div>
+
+
+            <div id="itemRepoSelections">
+                <div class="control-group">
+                    <label class="control-label" for="itemRepoXMLUP">Upload XML</label>
+                    <div class="controls">
+                        <input id="itemRepoXMLUP" name="itemRepoXMLUP" class="input-file" type="file">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label" for="itemRepoItemID">Item ID:</label>
+                    <div class="controls">
+                        @*@Html.TextBoxFor(model => model.item, new {id ="itemRepoItemID", Value=Model.item.ItemKey})*@
+                        <input id="itemRepoItemID" name="itemRepoItemID" type="text" placeholder="" class="input-medium">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label" for="itemRepoBankID">Bank ID</label>
+                    <div class="controls">
+                        <input id="itemRepoBankID" name="itemRepoBankID" type="text" placeholder="" class="input-medium">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label" for="itemRepoExemplarUpload">Exemplar</label>
+                    <div class="controls">
+                        <input id="itemRepoExemplarUpload" name="itemRepoExemplarUpload" class="input-file" type="file">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label" for="itemRepoTrainingUpload">TrainingGuide</label>
+                    <div class="controls">
+                        <input id="itemRepoTrainingUpload" name="itemRepoTrainingUpload" class="input-file" type="file">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label" for="itemRepoConditionCodes">ConditionCodes</label>
+                    <div class="controls">
+                        <input id="itemRepoConditionCodes" name="itemRepoConditionCodes" type="text" placeholder="" class="input-xxlarge">
+                    </div>
+                </div>
+
+
+                <div class="control-group">
+                    <label class="control-label">Choose Scoring Method</label>
+                    <div class="controls">
+                        <label class="radio inline" for="itemRepoRubricChoice">
+                            <input type="radio" name="itemRepoRubricChoice" id="itemRepoRubricChoice" value="Rubric" checked="checked">
+                            Rubric
+                        </label>
+                        <label class="radio inline" for="itemRepoDimScoreChoice">
+                            <input type="radio" name="itemRepoRubricChoice" id="itemRepoDimScoreChoice" value="Dimensional Scoring">
+                            Dimensional Scoring
+                        </label>
+                    </div>
+                </div>
+
+                <div id="itemRepoRubricUploadDiv">
+                    <div class="control-group">
+                        <label class="control-label" for="itemRepoMinPoints">Minimum Points</label>
+                        <div class="controls">
+                            <input id="itemRepoMinPoints" name="itemRepoMinPoints" type="text" placeholder="" class="input-small">
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="itemRepoMaxPoints">Maximum Points</label>
+                        <div class="controls">
+                            <input id="itemRepoMaxPoints" name="itemRepoMaxPoints" type="text" placeholder="" class="input-small">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-group" id="itemRepoDimensionScoresDiv">
+                    <table class="table table-striped table-bordered" id="dimScoreTable">
+                        <thead>
+                            <tr>
+                                <th>Dimension</th>
+                                <th>Min Points</th>
+                                <th>Max Points</th>
+                                <th>Delete</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><input id="dimScoreTableDimension" name="dimScoreTableDimension" type="text" placeholder="Insert Dimension here" class="input-medium"></td>
+                                <td><input id="dimScoreTableMinPoints" name="dimScoreTableMinPoints" type="text" placeholder="Min Points" class="input-small"></td>
+                                <td><input id="dimScoreTableMaxPoints" name="dimScoreTableMaxPoints" type="text" placeholder="Max Points" class="input-small"></td>
+                                <td><button id="dimScoreTableDelete" name="dimScoreTableDelete" class="btn btn-default">Delete</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="control-group">
+                        <label class="control-label" for="dimScoreTableAddRow"></label>
+                        <div class="controls">
+                            <button id="dimScoreTableAddRow" name="dimScoreTableAddRow" class="btn btn-default">Add Row</button>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="control-group">
+                    <label class="control-label" for="itemRepoSaveButton"></label>
+                    <div class="controls">
+                        <button id="itemRepoSaveButton" name="itemRepoSaveButton">Save Changes</button>
+                        <button id="itemRepoCancelButton" name="itemRepoCancelButton">Cancel Changes</button>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+    </form>
+    <footer>
+        <div class="navbar-fixed-bottom">
+            <p class="pull-left">&copy; <a href="http://www.air.org" target="_blank">AIR</a> 2014</p>
+            <p class="pull-right" id="districtControl">
+                <span style="white-space: nowrap;">
+                    <input type="checkbox" id="districtCheckbox" title="District View" />
+                    District View
+                </span>
+            </p>
+            <p class="pull-right">
+                <span style="white-space: nowrap;">
+                    <input type="checkbox" id="adminCheckbox" title="Admin View" />
+                    Admin View
+                </span>
+            </p>
+        </div>
+
+
+    </footer>
+</body>
+</html>

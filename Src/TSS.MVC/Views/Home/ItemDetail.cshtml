@@ -1,0 +1,301 @@
+﻿@using TSS.MVC.Models
+@model ItemDetailModel
+
+@{   
+    ViewBag.Title = "Score Response";   
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<div class="container-fluid">
+    <div class="row-fluid">
+
+        <noscript>
+            <div class="alert alert-block span10">
+                <h4 class="alert-heading">Warning!</h4>
+                <p>You need to have <a href="http://en.wikipedia.org/wiki/JavaScript" target="_blank">JavaScript</a> enabled to use this site.</p>
+            </div>
+        </noscript>
+
+        <div class="btn-group">
+            <a class="btn dropdown-toggle btn-standard" style="width:150px;" href="../ItemList?loadfromstorage"><< Back to Response List</a>
+        </div>
+
+        <div id="item-nav">
+            <div class="btn-group">
+                <a class="btn dropdown-toggle btn-standard" href="#" id="previousButton"><< Previous Response</a>
+            </div>
+
+             <div class="btn-group">
+                <a class="btn dropdown-toggle btn-standard" href="#" id="nextButton">Next Response >></a>
+            </div>
+        </div>
+
+        <div id="content" class="tss-content itemDetail"> </div>
+
+        <div class="rubric-table topBottommargin">
+	        <div class="rubric-table-link-tab">
+		       <span class="alignLeft">Response</span>	
+	        </div>
+           <div class="rubric-table-detail">
+               <iframe id="responseFrame" onload ="window.loadBlackbox()" src="@Model.IRiSRootURL" width="100%" height="350" frameborder="0"></iframe>
+           </div>
+       </div>
+        
+        <div class="btn-group" style="text-align: center; width: 100%">
+            <div class="btn-group">
+                <a class="btn dropdown-toggle" href="#" id="SubmitScore">Submit Score</a>
+            </div>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+           <div class="btn-group">
+            <a class="btn dropdown-toggle" href="#" id="BackButton">Back</a>
+        </div>
+</div>
+<br />
+<br />
+    </div>
+
+    <footer>
+        <div class="navbar-fixed-bottom">
+            <p class="pull-left">&copy; <a href="http://www.air.org" target="_blank">AIR</a> 2014 </p>
+        </div>
+    </footer>
+
+</div>
+<br />
+<br />                
+<br />
+<br />
+<!--/.fluid-container-->
+<!-- AIR Libraries -->
+<script src="@Model.IriSBlackboxRootURL/Scripts/Utilities/util_xdm.js" type="text/javascript"></script>
+<script src="@Model.IRiSRootURL/Scripts/client.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+   
+    $(function () {
+        var storage = $.localStorage;
+
+
+        var currentAssignmentId = '@Model.AssignmentId',
+            prevAssignmentId,
+            nextAssignmentId;
+
+        function loadItem(id) {
+            console.log("Loading item " + id);
+            currentAssignmentId = id;
+            $.get('/Home/ItemView/' + id).done(function (resp) {
+                updateItemSet(id);
+                $('#content').html(resp);
+                window.loadBlackbox();
+            }).fail(function (resp) {
+                console.log(resp);
+                alert("Unable to load item.");
+            });
+          
+        }
+        
+        /**
+         * Update next/prev items, update UI based on where we are in the item set
+         */
+        function updateItemSet(assignmentId) {
+            //$.cookie("currentId", assignmentId);
+            storage.set("TSS_CURRENTID",assignmentId);
+            //var currentIds = $.cookie("currentIds");
+            var currentIds = storage.get("TSS_CURRENTIDS");
+            var ids = [];
+            if (currentIds.toString().indexOf('|') > -1)
+                ids = currentIds.split('|');
+            else {
+                ids.push(currentIds);
+            }
+            
+
+            // These IDs are in a specific order. Find the ones before and after the current assignmentId.
+            for (var i = 0; i < ids.length; i++) {
+                if (ids[i] == currentAssignmentId) {
+                    if (i > 0)
+                        prevAssignmentId = ids[i - 1];
+                    else
+                        prevAssignmentId = -1;
+
+                    if (i == ids.length - 1)
+                        nextAssignmentId = -1;
+                    else
+                        nextAssignmentId = ids[i + 1];
+                }
+            }
+            toggleButton(prevAssignmentId, "#previousButton");
+            toggleButton(nextAssignmentId, "#nextButton");
+        }
+
+        // If prev or next is -1, then disable appropriate button.
+        function toggleButton(buttonAssignmentId, buttonName) {
+            if (buttonAssignmentId <= 0) {
+                $(buttonName).attr("disabled", true);
+            } else {
+                $(buttonName).removeAttr("disabled");
+            }
+        }
+
+        // Previous Clicked
+        $("#previousButton").click(function (e) {
+            if( ! $("#previousButton").attr("disabled")){
+                e.preventDefault();
+                loadItem(prevAssignmentId);
+                window.history.replaceState({url: "/Home/ItemDetail/"+prevAssignmentId}, '',"/Home/ItemDetail/"+prevAssignmentId);
+            }
+        });
+
+        // Next Clicked 
+        $("#nextButton").click(function (e) {
+            if( ! $("#nextButton").attr("disabled")){
+                e.preventDefault();
+                loadItem(nextAssignmentId);
+                window.history.replaceState({url: "/Home/ItemDetail/"+nextAssignmentId}, '', "/Home/ItemDetail/"+nextAssignmentId);
+            }
+        });
+
+
+        // Initial load
+        updateItemSet();
+        loadItem(currentAssignmentId);
+
+    });
+
+    
+   
+   
+    
+    $(document).ready(function () {
+
+        //IRiS.setFrame(frames[0]);
+
+        $('#criteriaTable').dataTable({
+            //"scrollY": "400px",
+            //"scrollCollapse": true,
+            "paging": false,
+            "ordering": false,
+            "info": false,
+            "searching": false,
+            "columnDefs": [
+                {
+                    "targets": [0],
+                    "visible": false,
+                    "searchable": false
+                }
+
+            ]
+        });
+
+        $("#tabs").tabs({
+            heightStyle: "auto"
+        });
+
+        $('.chosen-select').chosen({});
+
+        $("#SubmitScore").click(function () {
+
+
+            var ValidationFn = function (rowNum, txtVal, selIndex) {
+
+                if (txtVal === "" && selIndex === 0)
+                {
+                    return false;
+                }
+
+                return true;
+            };
+            var numberOfRows = $('#NumberOfDimensions').val();
+
+
+            console.log("numberOfRows: " + numberOfRows);
+            var scoreMessage = "Da Scores:\n";
+
+            var scoreArray = [];
+            var conditionArray = [];
+            var dimensionArray = [];
+            var assignedId = -1;
+
+            assignedId = $('#AssignedAssignmentId').val();
+            console.log("assignedId: " + assignedId);
+
+            //Now pull out the Data for each Row and put in the scoreArray:
+            for (i = 0; i < numberOfRows; i++) {
+                var scoreObject = $('#Number_' + i.toString());
+                scoreArray[i] = scoreObject.val();
+                var conditionSelected = $('#ItemDimensions_' + i.toString() + '__ConditionCode option:selected').val();
+                var selIndex = $('#ItemDimensions_' + i.toString() + '__ConditionCode option:selected').index();
+                console.log("conditionSelected: " + conditionSelected);
+                conditionArray[i] = conditionSelected;
+                var dimension = $('#Dim_' + i.toString()).text();
+                console.log("dimension: " + dimension);
+                dimensionArray[i] = dimension;
+
+                //validate row
+                if (!ValidationFn(i, scoreArray[i], selIndex))
+                {
+                    alert("The Score was not saved. \rNo value for the " + dimension + " dimension was entered. \rPlease enter a score or condition code for each dimension listed.");
+                    return false;
+                }
+
+            }
+
+            //The scoreArray could be sent to the server via Ajax.
+
+            //Now pull data out of the ScoreArray and put in a message.
+            for (i = 0; i < numberOfRows; i++) {
+                var score = scoreArray[i];
+                var condition = conditionArray[i];
+                var dim = dimensionArray[i];
+                scoreMessage += "\nScore " + i.toString() + ": " + score;
+                scoreMessage += "\nCondition " + i.toString() + ": " + condition;
+                scoreMessage += "\nDimension " + i.toString() + ": " + dim;
+            }
+
+            //alert(scoreMessage);
+            console.log(scoreMessage);
+
+            post = JSON.stringify({ id: assignedId, scores: scoreArray, conditions: conditionArray, dimensions: dimensionArray });
+
+            $.ajax({
+                url: '/Home/SubmitScores',
+                type: 'POST',
+                dataType: 'json',
+                data: post,
+                contentType: 'application/json',
+                async: false,
+                success: function (data) {
+                    console.debug(data);
+                    alert(data.message);
+                    $("#ScoreStatus").text(data.ScoreStatus);
+                },
+                error: function (data) {
+                    console.debug(data);
+                }
+
+            });
+
+            //Check that cookie is there:
+            var currentIds = $.cookie("currentIds");
+            console.log("currentIds: " + currentIds);
+
+            var currentId = $.cookie("currentId");
+            console.log("currentId: " + currentId);
+
+            //alert(currentIds);
+
+
+
+        });
+
+        //BackButton
+        $("#BackButton").click(function () {
+            location.href = "/Home/ItemList?loadfromstorage";
+            event.preventDefault();
+        });
+
+    });
+   
+    
+</script>

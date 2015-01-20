@@ -1,0 +1,115 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Item Entry & Configuration </title>
+
+    <link id="bs-css" href="~/Content/bootstrap.css" rel="stylesheet">
+    <link href="~/Content/bootstrap-responsive.css" rel="stylesheet">
+    <link href="~/Content/svtheme-app.css" rel="stylesheet">
+    <link href="~/Content/site.css" rel="stylesheet">
+    <link href="~/Content/jquery-ui-1.10.3.redmond.min.css" rel="stylesheet">
+    <link href="~/Content/jquery.jqGrid/ui.jqgrid.css" rel="stylesheet">
+    <link href="~/Content/fullcalendar.css" rel="stylesheet">
+    <link href="~/Content/fullcalendar.print.css" rel="stylesheet">
+    <link href="~/Content/chosen.css" rel="stylesheet">
+    <link href="~/Content/colorbox.css" rel="stylesheet">
+    <link href="~/Content/jquery.cleditor.css" rel="stylesheet">
+    <link href="~/Content/jquery.noty.css" rel="stylesheet">
+    <link href="~/Content/noty_theme_default.css" rel="stylesheet">
+    <link href="~/Content/elfinder.min.css" rel="stylesheet">
+    <link href="~/Content/elfinder.theme.css" rel="stylesheet">
+    <link href="~/Content/jquery.iphone.toggle.css" rel="stylesheet">
+    <link href="~/Content/opa-icons.css" rel="stylesheet">
+    <link href="~/Content/uploadify.css" rel="stylesheet">
+    <link href="~/content/select2.css" rel="stylesheet" />
+    <link href="~/content/select2-bootstrap.css" rel="stylesheet" />
+    <!--<script type="text/javascript" src="scripts/DesktopReferenceScripts.js"></script>-->
+    <script type="text/javascript" src="http://code.jquery.com/jquery.min.js"></script>
+    <script type="text/javascript" src="~/scripts/Handlebars-v2.0.0.js"></script>
+    <!--<script type="text/javascript" src="Scripts/head.js"> </script>-->
+    <script type="text/javascript" src="~/Scripts/select2.js"> </script>
+    <script type="text/javascript" src="~/Scripts/ItemRepositoryDataPull.js"></script>
+    <style type="text/css">
+        .itemRepoBody {
+            margin-top: 100px;
+            margin-bottom: 10px;
+            margin-right: auto;
+            margin-left: auto;
+            text-align: center;
+        }
+
+        #itemTableEditbtn {
+            display: inline-block;
+            float: left;
+        }
+
+        #itemTableDeletebtn {
+            display: inline-block;
+            float: right;
+        }
+
+        #itemRepositoryTable {
+            width: 95%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        #itemRepoAdd {
+            margin-left: 93%;
+            margin-bottom: 25px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="navbar navbar-fixed-top">
+            <div class="navbar-inner">
+                <a class="brand" href="/home/itemlist">
+                    <img alt="AIR Logo" src="Images/Logo.png" />
+                    <span>Student Scoring Dashboard - Prototype</span>
+                </a>
+
+                <!-- user dropdown starts -->
+                <div class="btn-group pull-right">
+                    <a class="btn dropdown-toggle" href="#">Home</a>
+                    <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+                        <i class="icon-user"></i><span class="hidden-phone"> John Q. Teacher</span>
+                        <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#">Profile</a></li>
+                        <li class="divider"></li>
+                        <li><a href="InitiateLogin.html">Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </header>
+    <div class="itemRepoBody">
+        <h3>Item Repository</h3>
+    </div>
+    <div id="item-repo-data"></div>
+    <!--Button to add items to repository-->
+    <!--TODO: Change the button action for the ItemRepoController-->
+    <form action="" method="get">
+        <input type="submit" value="Add Item" name="Add Item" id="itemRepoAdd" />
+    </form>
+    <footer>
+        <div class="navbar-fixed-bottom">
+            <p class="pull-left">&copy; <a href="http://www.air.org" target="_blank">AIR</a> 2014</p>
+            <p class="pull-right" id="districtControl">
+                <span style="white-space: nowrap;">
+                    <input type="checkbox" id="districtCheckbox" title="District View" />
+                    District View
+                </span>
+            </p>
+            <p class="pull-right">
+                <span style="white-space: nowrap;">
+                    <input type="checkbox" id="adminCheckbox" title="Admin View" />
+                    Admin View
+                </span>
+            </p>
+        </div>
+    </footer>
+</body>
+</html>

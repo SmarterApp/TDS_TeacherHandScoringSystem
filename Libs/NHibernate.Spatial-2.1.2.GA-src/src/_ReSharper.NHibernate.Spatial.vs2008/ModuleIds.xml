@@ -1,0 +1,5 @@
+<Modules>
+  <Module PersistentId="EAC092D9-6D47-4A30-803C-7A8583F99DFE" ModuleId="NHibernate.Spatial.MsSql2008.vs2008" />
+  <Module PersistentId="50868B60-AC38-47E1-BD09-B4A4AA06B6F2" ModuleId="NHibernate.Spatial.vs2008" />
+  <Module PersistentId="0DD11B24-D42E-4345-A770-0CE755E17C82" ModuleId="NHibernate.Spatial.PostGis.vs2008" />
+</Modules>
