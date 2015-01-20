@@ -36,11 +36,11 @@ This is a REST endpoint that receives test reports in an XML format from the Tes
 Each result received is inserted into a database where it is picked up and processed.  
 
 ### THSS User Interface(TSS.MVC)      
-This is a web application that test administrators users to view student responses and score them, and sending it to the TIS Service for further processing.  
+The Teacher Hand Scoring System was designed to be used by Teachers and Proctors of interim tests. It allows for the scoring of student responses and the reassigning of student responses to other proctors or teachers.  
 
 
 ## Build & Deploy
-TIS requires Visual Studios 2012 to build. The Deployment steps are as follows - 
+TIS requires Visual Studio 2012 to build. The Deployment steps are as follows - 
 
 1) Create the following databases [DB Server]:
 
@@ -58,7 +58,7 @@ Create an App User account and grant that account dbo access on the above DBs. [
 
 5) Deploy TSS.MVC code at `thss_opentestsystem` [Web server]
 	
-6) Load the item Package by using domain/api/item/submit/. for sample item json, use 
+6) Load the item Package by using domain/api/item/submit/.
 
 ## Configuration
 #### Web.config
@@ -278,7 +278,7 @@ please find dependencies in `<root>\package`
 
 
 ## Future Enhancements 
-The following features and tasks are not included in the 1/16/2015 release:
+The following features and tasks are not included in the 1/19/2015 release:
 
 ###1) Distribution of Data Across Database Servers
 This upcoming feature will allow users and their data to be distributed, by District Identifier, across databases. This feature is expected to be integrated before 1/27.
