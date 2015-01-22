@@ -1,0 +1,480 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!--
+		
+            Licensed under the Apache License v2.0
+            http://www.apache.org/licenses/LICENSE-2.0
+
+    -->
+    <meta charset="utf-8">
+    <title>Student Scoring Dashboard - Prototype</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A Teacher Student Scoring Dashboard.">
+    <meta name="author" content="Summit">
+
+    <!-- The styles -->
+    <link id="bs-css" href="Content/bootstrap.css" rel="stylesheet">
+    <link href="Content/bootstrap-responsive.css" rel="stylesheet">
+    <!--    <link href="Content/svtheme-app.css" rel="stylesheet">-->
+    <link href="Content/site.css" rel="stylesheet">
+    <link href="Content/jquery-ui.min.css" rel="stylesheet">
+    <link href="Content/jquery-ui.theme.css" rel="stylesheet" />
+    <link href="Content/jquery.jqGrid/ui.jqgrid.css" rel="stylesheet">
+    <link href="Content/fullcalendar.css" rel="stylesheet">
+    <link href="Content/fullcalendar.print.css" rel="stylesheet">
+    <link href="Content/chosen.css" rel="stylesheet">
+    <link href="Content/colorbox.css" rel="stylesheet">
+    <link href="Content/jquery.cleditor.css" rel="stylesheet">
+    <link href="Content/jquery.noty.css" rel="stylesheet">
+    <link href="Content/noty_theme_default.css" rel="stylesheet">
+    <link href="Content/elfinder.min.css" rel="stylesheet">
+    <link href="Content/elfinder.theme.css" rel="stylesheet">
+    <link href="Content/jquery.iphone.toggle.css" rel="stylesheet">
+    <link href="Content/opa-icons.css" rel="stylesheet">
+    <link href="Content/uploadify.css" rel="stylesheet">
+    <link href="Content/jquery.dataTables.min.css" rel="stylesheet">
+    <!-- Copied smoothness to project to alleviate SSL errors --> 
+    <link href="Content/smoothness.jquery-ui.css" rel="stylesheet" />
+    <!-- <link rel="stylesheet" href="http://code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css"> -->
+
+    <!-- The fav icon -->
+    <link rel="shortcut icon" href="Images/favicon.png">
+    <!-- //Bootstrap-->
+    <script src="Scripts/bootstrap.min.js"> </script>
+    <!--jQuery-->
+    <script src="Scripts/jquery-2.0.1.min.js"> </script>
+    <!-- //jQuery UI-->
+    <script src="Scripts/jquery-ui.min.js"> </script>  
+    <!-- //library for cookie management -->
+    <script src="Scripts/jquery.cookie.js"> </script>
+    <!-- //select or dropdown enhancer-->
+    <script src="Scripts/chosen.jquery.min.js"> </script>
+    <!-- // plug-in for gallery image view -->
+    <script src="Scripts/jquery.colorbox.min.js"> </script>
+    <!--  // Jquery DataTables-->
+    <script src="Scripts/jquery.dataTables.js"> </script>
+    <!-- // modernizr -->
+    <script src="Scripts/modernizr-2.6.2.js"> </script>
+    <!-- //Handlebars-->
+    <script src="Scripts/handlebars-v2.0.0.js"> </script>
+    <script type="text/javascript" src="/Sample/StudentItems.data-script.js"></script>
+
+
+</head>
+<body>
+
+    <div id="dialog-reassign" title="Reassign Selected Students">
+        <table>
+            <tr>
+                <td>Reassign Selected Students To:</td>
+            </tr>
+            <tr>
+                <td>
+                    <select data-placeholder="Select Teacher..." class="chosen-select" tabindex="1">
+                        <option value=""></option>
+                        <option>Jane M. Instructor</option>
+                        <option>Pedro L. Maestro</option>
+                        <option>Juan L. Instructor</option>
+                    </select>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div id="dialog-complete" title="Marked Students Complete?">
+        <table>
+            <tr>
+                <td><span class="ui-icon ui-icon-check" style="float: left; margin: 0 7px 20px 0;"></span></td>
+                <td>Are you sure that the selected students should be marked as complete?
+            This action cannot be reversed.
+                </td>
+            </tr>
+        </table>
+    </div>
+
+
+    <header>
+        <div class="navbar navbar-fixed-top">
+            <div class="navbar-inner">
+                <a class="brand" href="/home/itemlist">
+                    <img alt="AIR Logo" src="Images/Logo.png" />
+                    <span>Student Scoring Dashboard - Prototype</span></a>
+
+                <!-- user dropdown starts -->
+                <div class="btn-group pull-right">
+                    <a class="btn dropdown-toggle" href="#">Settings</a>
+                    <a class="btn dropdown-toggle" href="#">Home</a>
+                    <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+                        <i class="icon-user"></i><span class="hidden-phone"> John Q. Teacher</span>
+                        <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#">Profile</a></li>
+                        <li class="divider"></li>
+                        <li><a href="login.html">Logout</a></li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+        <!-- topbar / NavBar ends -->
+    </header>
+
+
+    <!-- Content  -->
+    <div class="container-fluid margin-top">
+        <div class="row-fluid">
+
+            <noscript>
+                <div class="alert alert-block span10">
+                    <h4 class="alert-heading">Warning!</h4>
+                    <p>You need to have <a href="http://en.wikipedia.org/wiki/JavaScript" target="_blank">JavaScript</a> enabled to use this site.</p>
+                </div>
+            </noscript>
+
+            <div id="content" class="tss-content">
+                <!-- content starts -->
+                <div>
+                    <div class="btn-group">
+                        <table>
+                            <tr>
+                                <td>
+                                    <label>Test</label>
+                                </td>
+                                <td class="tableSpace">&nbsp;</td>
+                                <td>
+                                    <select data-placeholder="Select Test..." class="chosen-select" tabindex="1" data-col="11">
+                                        <option value=""></option>
+                                        <option>Grade 3 Math</option>
+                                        <option>Grade 4 Math</option>
+                                        <option>Grade 3 ELA</option>
+                                        <option>Grade 4 ELA</option>
+                                    </select>
+                                </td>
+                                <td class="tableSpace">&nbsp;</td>
+                                <td>
+                                    <label>Session</label>
+                                </td>
+                                <td class="tableSpace">&nbsp;</td>
+                                <td>
+                                    <select data-placeholder="Select Session..." class="chosen-select" tabindex="1" data-col="4">
+                                        <option value=""></option>
+                                        <option>CA12542</option>
+                                        <option>CA65344</option>
+                                        <option>CA57456</option>
+                                    </select>
+                                </td>
+                                <td class="tableSpace">&nbsp;</td>
+                                <td class="tableSpace">&nbsp;</td>
+                                <td class="adminFilter">
+                                    <label>Filter</label>
+                                </td>
+                                <td class="tableSpace">&nbsp;</td>
+                                <td class="districtFilter">
+                                    <select data-placeholder="Select School..." class="chosen-select" tabindex="4" data-col="8">
+                                        <option value=""></option>
+                                        <option>School 1</option>
+                                        <option>School 2</option>
+                                        <option>School 3</option>
+                                    </select>
+                                </td>
+                                <td class="tableSpace">&nbsp;</td>
+                                <td class="adminFilter">
+                                    <select data-placeholder="Select Grade..." class="chosen-select" tabindex="2" data-col="9">
+                                        <option value=""></option>
+                                        <option>03</option>
+                                        <option>04</option>
+                                        <option>05</option>
+                                    </select>
+                                </td>
+                                <td class="tableSpace">&nbsp;</td>
+                                <td class="adminFilter">
+                                    <select data-placeholder="Select Subject..." class="chosen-select" tabindex="3" data-col="10">
+                                        <option value=""></option>
+                                        <option>Mathematics</option>
+                                        <option>English Language Arts</option>
+                                    </select>
+                                </td>
+                                <td class="tableSpace">&nbsp;</td>
+                                <td class="adminFilter">
+                                    <select data-placeholder="Select Scorer..." class="chosen-select" tabindex="6">
+                                        <option value=""></option>
+                                        <option>Jane M. Instructor</option>
+                                        <option>Pedro L. Maestro</option>
+                                        <option>Juan L. Instructor</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+<!--                    <table id="studentList" border="0" style="width: 100%;">
+                        </table>-->
+                    <div id="data-container">
+                        <div id="data-details">
+                        </div>                        
+                    </div>
+                </div>
+                <br />
+                <div class="btn-group" style="text-align: center; width: 100%">
+                    <div class="btn-group">
+                        <a class="btn dropdown-toggle" href="#" id="reassignButton">Reassign All Selected</a>
+                    </div>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <div class="btn-group">
+                        <a class="btn dropdown-toggle" href="#" id="completeButton">Mark Selected As Complete</a>
+                    </div>
+                </div>
+
+                <!-- content ends -->
+            </div>
+            <!--/#content.span10-->
+        </div>
+        <!--/fluid-row-->
+
+        <footer>
+            <div class="navbar-fixed-bottom">
+                <p class="pull-left">&copy; <a href="http://www.air.org" target="_blank">AIR</a> 2014</p>
+                <p class="pull-right" id="districtControl">
+                    <span style="white-space: nowrap;">
+                        <input type="checkbox" id="districtCheckbox" title="District View" />
+                        District View </span>
+                </p>
+                <p class="pull-right">
+                    <span style="white-space: nowrap;">
+                        <input type="checkbox" id="adminCheckbox" title="Admin View" />
+                        Admin View </span>
+                </p>
+            </div>
+
+
+        </footer>
+
+    </div>
+    <!--/.fluid-container-->
+
+
+</body>
+</html>
+
+
+
+<script type="text/javascript">
+    //jQuery().ready(function () {
+
+    //jQuery.ajaxSetup({ async: false });
+
+    //alert("Data Loading...");
+    alert("Loading ...");
+
+
+    $(document).ready(function () {
+
+        retrieveData();
+
+        //$('#studentList')
+        //    .dataTable({
+        //    "serverSide": true,
+        //    "ajaxSource": "Sample/Lookup _Schools_Sample.json.js",
+        //    "columns": [
+        //        { "data": "SchoolID" },
+        //        { "data": "SchoolName" },
+        //        { "data": "StateName" }
+        //    ]
+        //});
+
+
+        var table = $('#studentList').DataTable();
+        table.draw();
+        table.state.save();
+
+        $('.chosen-select').chosen({});
+
+
+
+        var completeDialog = $("#dialog-complete").dialog({
+            resizable: false,
+            height: 200,
+            width: 450,
+            modal: true,
+            autoOpen: false,
+            buttons: {
+                "Mark Selected as Complete": function () {
+                    $(this).dialog("close");
+                },
+                Cancel: function () {
+                    $(this).dialog("close");
+                }
+            }
+        });
+
+        var reassignDialog = $("#dialog-reassign").dialog({
+            resizable: false,
+            height: 350,
+            width: 450,
+            modal: true,
+            autoOpen: false,
+            buttons: {
+                "Reassign": function () {
+                    $(this).dialog("close");
+                },
+                Cancel: function () {
+                    $(this).dialog("close");
+                }
+            }
+        });
+
+
+
+
+        $("#completeButton").button().click(function (event) {
+
+            //All the checked rows should be removed.
+            //Spin through each row in the DataTable, if that row is checked, remove it.
+            //Need to grab the correctly sorted and filtered dataset.
+            var rows = $("#studentList").dataTable()._('tr', { "filter": "applied" });
+            for (var i = 0; i < rows.length; i++) {
+                //var row = rows[i].data();
+                var rowId = rows[i][0]; //.find("td:eq(1)").text();
+                //var rowId = row[0];
+                //alert(rowId);
+                var rowCheckBox = $('#Checkbox' + rowId);
+                //alert(rowCheckBox);
+                var isChecked = rowCheckBox.prop('checked');
+
+                //alert(isChecked);
+
+
+
+                if (isChecked) {
+                    //alert("Removing: " + rowId);
+                    //var oTable = $("#studentList").dataTable();
+                    //$("#studentList").dataTable().row(rowCheckBox.parents('tr')).remove();
+                   // oTable.fnDeleteRow(oTable.fnGetPosition(rows[i][0]));
+                    //rows[i].remove(); //.draw(false);
+                    //alert("Row: " + rowId + " removed");
+                }
+
+                
+            }
+
+
+            completeDialog.dialog("open");
+            event.preventDefault();
+        });
+
+        $("#reassignButton").button().click(function (event) {
+
+            reassignDialog.dialog("open");
+            event.preventDefault();
+        });
+
+
+
+
+        //adminCheckbox
+        $("#adminCheckbox").click(function (event) {
+            //e.preventDefault();
+
+            if (this.checked) {
+                //Turn on Filters
+                $("#assignedToHeader").show();
+                $(".adminFilter").show();
+                $("#districtControl").show();
+                //$("html").addClass("isAdmin"); //for th sizing purpose, may not need this when the grid is redone
+
+            } else {
+                //Turn on Filters
+                $("#assignedToHeader").hide();
+                $(".adminFilter").hide();
+                $("#districtControl").hide();
+                $(".districtFilter").hide();
+                $("#districtCheckbox").prop("checked", false);
+            }
+
+
+        });
+
+        //Filters based on selected column. The dropdowns have a data-col that tells what columun they are associated with..
+        $(".chosen-select").change(function (event) {
+
+            //Clear all Check boxes.
+            $("input[type=checkbox]").prop('checked', false);
+
+            //e.preventDefault();
+            var val = $(this).val();
+            var col = $(this).data("col");
+            //alert(col);
+
+            var table = $('#studentList').DataTable();
+            table.column(col)
+                .search(val ? $(this).val() : val, true, false)
+                .draw();
+
+            table.state.save();
+
+            prepareIds();
+
+
+        });
+
+
+        //districtCheckbox
+        $("#districtCheckbox").click(function (event) {
+            //e.preventDefault();
+
+            if (this.checked) {
+                //Turn on Filters
+                $(".districtFilter").show();
+
+            } else {
+                //Turn on Filters
+                $(".districtFilter").hide();
+            }
+
+        });
+
+        $(".score-it").click(function (event) {
+
+            window.open('/TSSDetails.html');
+            event.preventDefault();
+        });
+
+
+
+    });
+
+    function prepareIds() {
+
+        var rowIds = "";
+
+        //Need to grab the correctly sorted and filtered dataset.
+        var rows = $("#studentList").dataTable()._('tr', { "filter": "applied" });
+        for (var i = 0; i < rows.length; i++) {
+            //var row = rows[i].data();
+            var rowId = rows[i][0].toString(); //.find("td:eq(1)").text();
+            //var rowId = row[0];
+
+            rowIds += rowId + "|";
+        }
+
+        //table.rows().indexes().each(function (idx) {
+        //    var row = table.row(idx).data();
+        //    //alert(row);
+        //    //var rowArray = row.split(",");
+        //    //alert(rowArray);
+        //    var rowId = row[0];
+
+        //    rowIds += rowId + "|";
+        //});
+
+        rowIds = rowIds.substring(0, rowIds.length - 1);
+        //alert(rowIds);
+
+        //Now save the ids into a Cookie.
+        $.cookie("currentIds", rowIds);
+
+    }
+</script>
+
