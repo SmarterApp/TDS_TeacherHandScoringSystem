@@ -72,7 +72,10 @@ Create an App User account and grant that account dbo access on the above DBs. [
 
 5) Deploy TSS.MVC code at `thss_opentestsystem` [Web server]
 	
-6) Load the item Package by using domain/api/item/submit/.
+6) Configure application settings and add appropriate files.
+
+7) Load the item Package by using domain/api/item/submit/.
+
 
 ## Configuration
 Per instance application configuration settings can be found in the following files:
@@ -112,7 +115,7 @@ Per instance application configuration settings can be found in the following fi
 				<add key="IRIS_ROOT_URL" value="https://[Item Renderer URL]/IRiS/"/>
 				<add key="IRISBlackbox_ROOT_URL" value="https://[Item Renderer URL]/IRiS/"/>
 			
-				<add key="IRIS_PEM_LOCATION" value="~/App_Data/air-iris.ppk" />
+				<add key="IRIS_PEM_LOCATION" value="" />
 				<add key="IRIS_KEY_EXPIRE_MINUTES" value="30" />
 			
 				<add key="USER_GUIDE_LOCATION" value="/content/UserGuide/TSS_User_Guide.docx"/>
@@ -148,12 +151,14 @@ Per instance application configuration settings can be found in the following fi
     		</ConnectionStrings>
     	</TSSDataDistribution>
 		
-* `<root>\Src\TSS.MVC\App_Data\sp.xml`
-* `<root>\Src\TSS.MVC\App_Data\sp-extended.xml`
-* `<root>\Src\TSS.MVC\App_Data\idp.xml`
-* `<root>\Src\TSS.MVC\App_Data\idp-extended.xml`
-* `<root>\Src\TSS.MVC\App_Data\fedlet.cot`
+* `<root>\Src\TSS.MVC\App_Data\sp.xml` *
+* `<root>\Src\TSS.MVC\App_Data\sp-extended.xml` *
+* `<root>\Src\TSS.MVC\App_Data\idp.xml` *
+* `<root>\Src\TSS.MVC\App_Data\idp-extended.xml` *
+* `<root>\Src\TSS.MVC\App_Data\fedlet.cot` *
 * `<root>\Src\TSS.MVC\App_Data\reportxml_os.xsd`
+
+\* These are all required to work with Open AM, but will differ with every deployment. Please refer to Open AM documentation for generating and configuring these documents.
 
 #### Additional Config information
 	
@@ -253,6 +258,13 @@ please find dependencies in `<root>\package`
 * jQuery StorageAPI
 * jQuery Validate
 * Modernizr
+
+## Release Notes
+### 2/6/2015 
+* 	Added the ability to distribute database connections across district association. 
+*  Updated integration with IRIS
+*  Various Bug Fixes
+
 
 
 ## Future Enhancements 
