@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!-- This configuration file provides links for the drop-down navigation in THSS. -->
+<!-- The state name must match the state specified in the settings.config document -->
+<Contents>
+  <Content ForState="SBAC" ContentSectionName="TssSubSites">
+    <ClientSites>
+      <ClientSite>
+        <ClientID>Tide</ClientID>
+        <Description>ART</Description>
+        <Url>https://[some ART web site]</Url>
+      </ClientSite>
+      <ClientSite>
+        <ClientID>Reports</ClientID>
+        <Description>Reporting</Description>
+        <Url>http://[some reporting website]</Url>
+      </ClientSite>
+    </ClientSites>
+  </Content>
+</Contents>
