@@ -141,18 +141,20 @@
         // Previous Clicked
         $("#previousButton").click(function (e) {
             if( ! $("#previousButton").attr("disabled")){
-                e.preventDefault();
-                loadItem(prevAssignmentId);
-                window.history.replaceState({url: "/Home/ItemDetail/"+prevAssignmentId}, '',"/Home/ItemDetail/"+prevAssignmentId);
+                //e.preventDefault();
+                //loadItem(prevAssignmentId);
+                //window.history.replaceState({ url: "/Home/ItemDetail/" + prevAssignmentId }, '', "/Home/ItemDetail/" + prevAssignmentId);
+                window.location.href = "/Home/ItemDetail/" + prevAssignmentId;
             }
         });
 
         // Next Clicked 
         $("#nextButton").click(function (e) {
             if( ! $("#nextButton").attr("disabled")){
-                e.preventDefault();
-                loadItem(nextAssignmentId);
-                window.history.replaceState({url: "/Home/ItemDetail/"+nextAssignmentId}, '', "/Home/ItemDetail/"+nextAssignmentId);
+                //e.preventDefault();
+                //loadItem(nextAssignmentId);
+                //window.history.replaceState({ url: "/Home/ItemDetail/" + nextAssignmentId }, '', "/Home/ItemDetail/" + nextAssignmentId);
+                window.location.href = "/Home/ItemDetail/" + nextAssignmentId;
             }
         });
 

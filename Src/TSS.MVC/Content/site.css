@@ -661,6 +661,39 @@ table.dataTable thead th:first-child, table.dataTable tbody td:first-child {
     width: 100% !important;
 }
 
+/*CLS Dropdown*/
+.oam-navigate-system {
+    color: white;
+    display: inline-block;
+    float: left;
+    padding: 6px 10px;
+    font-weight: bold;
+}
+.oam-navigate-header {
+    display: inline-block;
+    border-left: 1px solid white;
+    border-right: 1px solid white;
+    overflow: hidden;
+    width:214px;
+    height:30px;
+    background: url(../Images/THSS_CLS_downarrow.png) no-repeat right #1386AB;
+}
+.oam-navigate-header #HdrOpenAmSites {
+    background: transparent;
+    color: white;
+    border: none;
+    font-weight: bold;
+    width:230px;
+}
+.oam-navigate-header #HdrOpenAmSites option {
+    background: white;
+    color: #333333;  
+    border-bottom: 1px solid #d9d9d9;
+    font-weight: normal;
+    padding: 8px 5px;
+    line-height:2em;
+}
+
 @media (max-width: 979px) {
 .page-body {
         margin-top: -115px;

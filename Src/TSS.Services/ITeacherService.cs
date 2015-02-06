@@ -19,7 +19,7 @@ namespace TSS.Services
     {
         
 
-		TeacherResult GetTeachersFromApi(int pageNumber, int pageSize, string role, string associatedEntityId, string level, string state);
+		//TeacherResult GetTeachersFromApi(int pageNumber, int pageSize, string role, string associatedEntityId, string level, string state);
         List<SearchResults> GetListOfPossibleScorers(List<TenancyChain> tens, List<RoleSet> roles);
         
        

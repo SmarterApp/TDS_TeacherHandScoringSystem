@@ -11,7 +11,7 @@
 namespace TSS.Domain
 {
     [System.Runtime.Serialization.DataContractAttribute(Name = "oAuthToken")]
-    public partial class oAuthToken
+    public class oAuthToken
     {
        [System.Runtime.Serialization.DataMemberAttribute()]
         public string scope;
@@ -27,5 +27,14 @@ namespace TSS.Domain
 
         [System.Runtime.Serialization.DataMemberAttribute()]
         public string access_token;
+
+        public void SetError()
+        {
+            access_token = "ERROR";
+        }
+        public bool Error()
+        {
+            return access_token == "ERROR";
+        }
     }
 }

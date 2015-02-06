@@ -34,6 +34,7 @@ namespace TSS.MVC.Helpers
 
         internal static List<SelectListItem> GetTssTests(List<FilterResult> filterItems)
 		{
+
             var tssTests = new List<SelectListItem>();
             foreach(FilterResult filterResult in filterItems)
             {
@@ -52,7 +53,7 @@ namespace TSS.MVC.Helpers
             var tssSessions = new List<SelectListItem>();
             foreach (FilterResult filterResult in filterItems)
             {
-                if (tssSessions.Any(t => t.Value == filterResult.SessionId)) continue;
+                if (tssSessions.Any(t => t.Value.ToLower() == filterResult.SessionId.ToLower())) continue;
                 var selectListItem = new SelectListItem();
                 selectListItem.Value = filterResult.SessionId;
                 selectListItem.Text = filterResult.SessionId;
@@ -90,7 +91,7 @@ namespace TSS.MVC.Helpers
                 if (tssSubjects.Any(t => t.Value == filterResult.Subject)) continue;
                 var selectListItem = new SelectListItem();
                 selectListItem.Value = filterResult.Subject;
-                selectListItem.Text = filterResult.Subject;
+                selectListItem.Text = (filterResult.Subject.ToUpper() == "EL") ?filterResult.Subject.ToUpper() + "A" : filterResult.Subject.ToUpper() ; 
                 tssSubjects.Add(selectListItem);
             }
 

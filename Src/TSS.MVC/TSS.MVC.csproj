@@ -60,7 +60,7 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Practices.ServiceLocation, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Packages\Microsoft.Practices.ServiceLocation.dll</HintPath>
+      <HintPath>..\..\Packages\CommonServiceLocator.1.0\lib\NET35\Microsoft.Practices.ServiceLocation.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\..\Packages\Newtonsoft.Json.4.5.7\lib\net40\Newtonsoft.Json.dll</HintPath>
@@ -138,6 +138,7 @@
     <Compile Include="Models\ConditionCodeModel.cs" />
     <Compile Include="Models\ItemDetailModel.cs" />
     <Compile Include="Models\ItemDimensionModel.cs" />
+    <Compile Include="Models\OpenamSiteModel.cs" />
     <Compile Include="Models\RubricListModel.cs" />
     <Compile Include="Models\ItemDetailViewModel.cs" />
     <Compile Include="Models\ItemConfigurationViewModel.cs" />
@@ -313,44 +314,6 @@
     <Content Include="Images\sort_both.png" />
     <Content Include="Images\sort_desc.png" />
     <Content Include="Images\sort_desc_disabled.png" />
-    <Content Include="Sample\Dimension-1-Sample.json.js" />
-    <Content Include="Sample\1.xml" />
-    <Content Include="Sample\2.xml" />
-    <Content Include="Sample\Dimension-Multi-Sample.json.js" />
-    <Content Include="Sample\RubricList_Req_Sample.xml">
-      <SubType>Designer</SubType>
-    </Content>
-    <Content Include="Sample\DT_StudentItems_Sample.json.js" />
-    <Content Include="Sample\HelpfulLinks.txt" />
-    <Content Include="Sample\Lookup _Schools_Sample.json.js" />
-    <Content Include="Sample\Lookup_Teachers_Sample.json.js" />
-    <Content Include="Sample\Lookup_Tests_Sample.json.js" />
-    <Content Include="Sample\RubricList_Sample.xml">
-      <SubType>Designer</SubType>
-    </Content>
-    <Content Include="Sample\score.xml" />
-    <Content Include="Sample\score_1Dim.xml" />
-    <Content Include="Sample\score_MultiDim.xml" />
-    <Content Include="Sample\Student.xml" />
-    <Content Include="Sample\StudentItems.data-script.js" />
-    <Content Include="Sample\StudentItems.dataTableTemplate.handlebars.html" />
-    <Content Include="Sample\StudentItems_Sample.json.js" />
-    <Content Include="Sample\StudentItems_Sample.xml" />
-    <Content Include="Sample\StudentList.xml" />
-    <Content Include="Sample\TestHandlebars\data-script.js" />
-    <Content Include="Sample\TestHandlebars\dataDetailsTemplate.handlebars.html" />
-    <Content Include="Sample\TestHandlebars\dataTableTemplate.handlebars.html" />
-    <Content Include="Sample\TestHandlebars\index.html" />
-    <Content Include="Sample\TestHandlebars\working-data-file.json.js" />
-    <Content Include="Sample\TestStudent\data-script.js" />
-    <Content Include="Sample\TestStudent\dataDetailsTemplate.handlebars.html" />
-    <Content Include="Sample\TestStudent\dataTableTemplate.handlebars.html" />
-    <Content Include="Sample\TestStudent\index.html" />
-    <Content Include="Sample\TestStudent\StudentItems.data-script.js" />
-    <Content Include="Sample\TestStudent\StudentItems.dataTableTemplate.handlebars.html" />
-    <Content Include="Sample\TestStudent\StudentItems_Sample.json.js" />
-    <Content Include="Sample\TestStudent\working-data-file.json.js" />
-    <Content Include="Sample\TSSFrame.html" />
     <Content Include="Scripts\app\TSS.Data.Item.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
@@ -402,30 +365,15 @@
     <Content Include="Scripts\i18n\grid.locale-ua.js" />
     <Content Include="Scripts\i18n\grid.locale-vi.js" />
     <Content Include="Images\Sorting icons.psd" />
-    <Content Include="Sample\items.json.js" />
     <Content Include="App_Data\air-iris.ppk" />
+    <Content Include="App_Data\DataDistribution.config" />
     <None Include="App_Data\reportxml_os.xsd">
       <SubType>Designer</SubType>
     </None>
-    <Content Include="database.config">
+    <Content Include="App_Data\settings.config">
       <SubType>Designer</SubType>
     </Content>
     <None Include="Properties\PublishProfiles\Test.pubxml" />
-    <None Include="Sample\Student.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Sample\StudentItem.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Sample\StudentItems_Sample.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Sample\StudentList.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Sample\TestSchema.xsd">
-      <SubType>Designer</SubType>
-    </None>
     <None Include="Scripts\jquery-2.0.1.intellisense.js" />
     <Content Include="Scripts\ItemRepositoryDataPull.js" />
     <Content Include="Scripts\jquery-2.0.1.js" />
@@ -448,9 +396,6 @@
     <Content Include="Scripts\jquery.validate.unobtrusive.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
     <Content Include="Scripts\modernizr-2.6.2.js" />
-    <Content Include="TSSDetails.html" />
-    <Content Include="TSSList.html" />
-    <Content Include="TSS_StudentItemList.html" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
@@ -472,6 +417,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Areas\Api\Views\Shared\" />
+    <Folder Include="Sample\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\FedletAPI\FedletAPI.csproj">

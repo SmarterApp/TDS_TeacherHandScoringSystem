@@ -28,33 +28,6 @@ namespace TSS.Services
             _testImportRepository = testImportRepository;
         }
 
-
-        public bool SaveDistrictAndSchool(string xmlInputs)
-        {
-            return _testImportRepository.SaveDistrictAndSchool(xmlInputs);
-        }
-
-        public bool SaveStudent(Student aStudent)
-        {
-            return _testImportRepository.SaveStudent(aStudent);
-        }
-
-
-        public bool SaveTeacher(Teacher aTeacher)
-        {
-            return _testImportRepository.SaveTeacher(aTeacher);
-        }
-
-        public bool SaveTest(Test aTest)
-        {
-            return _testImportRepository.SaveTest(aTest);
-        }
-
-        public bool BatchProcessAssingmentAndResponse(string xmlInputs)
-        {
-            return _testImportRepository.BatchProcessAssingmentAndResponse(xmlInputs);
-        }
-
         public School PopulateSchoolFromTdsReport(TDSReport tdsReport)
         {
             var school = new School();
@@ -62,7 +35,7 @@ namespace TSS.Services
             {
                 foreach (var obj in tdsReport.Examinee.Items.OfType<TDSReportExamineeExamineeRelationship>())
                 {
-                    if (obj.context != Context.FINAL) continue;
+                    // if (obj.context != Context.FINAL) continue;
                     switch (obj.name)
                     {
                         case "SchoolID":
@@ -99,7 +72,7 @@ namespace TSS.Services
             {
                 foreach (var obj in tdsReport.Examinee.Items.OfType<TDSReportExamineeExamineeRelationship>())
                 {
-                    if (obj.context != Context.FINAL) continue;
+                    // if (obj.context != Context.FINAL) continue;
                     switch (obj.name)
                     {
                         case "DistrictID":
@@ -137,7 +110,7 @@ namespace TSS.Services
             {
                 foreach (var obj in tdsReport.Examinee.Items.OfType<TDSReportExamineeExamineeAttribute>())
                 {
-                    if (obj.context == Context.FINAL) break ;
+                    // if (obj.context != Context.FINAL) continue;
                     switch (obj.name)
                     {
                         case "DOB":
@@ -238,8 +211,8 @@ namespace TSS.Services
             {
                 //if an item hasn’t been configured in THSS – ignore the item.
                 if (!itemTypes.Any(l => l.ItemKey == (int)item.key && l.BankKey == (int)item.bankKey)) continue;
-                //If the item is ‘scored’ in the XML – ignore the item.
-                if (item.scoreStatus == TDSReportOpportunityItemScoreStatus.SCORED) continue;
+                //If the item has no score status or is ‘scored’ in the XML – ignore the item.
+                if ((!item.scoreStatusSpecified) || item.scoreStatus == TDSReportOpportunityItemScoreStatus.SCORED) continue;
                 //If the item is ‘not scored’ in the THSS and has any status other than ‘scored’ in the XML , set status at not scored in thss
                 int scoreStatus = (item.scoreStatus != TDSReportOpportunityItemScoreStatus.SCORED) ? 0 : 2;
                 

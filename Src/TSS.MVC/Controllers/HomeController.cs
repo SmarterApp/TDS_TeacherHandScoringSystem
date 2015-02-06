@@ -32,13 +32,11 @@ namespace TSS.MVC.Controllers
 	public class HomeController : Controller
 	{
 		public readonly IExportService _exportService;
-        private readonly ILoggerService _loggerService;
 	    private readonly IStudentResponseService _studentResponseService;
 
-		public HomeController( IExportService exportService, ILoggerService loggerService, IStudentResponseService studentResponseService)
+		public HomeController( IExportService exportService, IStudentResponseService studentResponseService)
 		{
             _exportService = exportService;
-		    _loggerService = loggerService;
 		    _studentResponseService = studentResponseService;
 		}
 
@@ -81,6 +79,7 @@ namespace TSS.MVC.Controllers
             }
             catch (Exception exc)
             {
+                LoggerRepository.LogException(exc);
                 return Json(new { success = false, data = string.Format("\"Error Code\": \"{0}\"  \"Message\":\"{1}\"", 4002, exc.Message) });
             }
         }
@@ -108,7 +107,7 @@ namespace TSS.MVC.Controllers
                     {
                         //save TIS callback request in debug mode
                         if (HttpContext.IsDebuggingEnabled)
-                            _loggerService.SaveLog(new Log
+                            LoggerRepository.SaveLog(new Log
                                                        {
                                                            Category = LogCategory.Application,
                                                            Level = LogLevel.Warning,
@@ -123,7 +122,7 @@ namespace TSS.MVC.Controllers
                     {
                         // Add to not scored list if not successfully scored.
                         notsuccessfullyScored.Add(assignment.AssignmentId.ToString());
-                        _loggerService.SaveLog(new Log
+                        LoggerRepository.SaveLog(new Log
                         {
                             Category = LogCategory.Application,
                             Level = LogLevel.Error,
@@ -142,6 +141,7 @@ namespace TSS.MVC.Controllers
             }
             catch (Exception exc)
             {
+                LoggerRepository.LogException(exc);
                 return Json(new { success = false, data = string.Format("\"Error Code\": \"{0}\"  \"Message\":\"{1}\"", 4001, exc.Message) });
             }
         }
@@ -154,8 +154,15 @@ namespace TSS.MVC.Controllers
             {
                 var assignment = _studentResponseService.GetAssignmentById(id);
 
+                #region Return error if we try to score the item which is  already been marked as complete
+                if (assignment.Teacher.TeacherID == null && assignment.ScoreStatus == StudentResponseAssignment.ScoreStatusCode.NotScored)
+                {
+                    return Json(new {success = false,data = String.Empty,message = "Item has already been marked as completed"});
+                }
+                #endregion
+
                 #region Return error if item is not assigned to current user
-                if (!(String.Equals(assignment.Teacher.TeacherID.Trim(), UserAttributes.SAML.sbacUUID.Trim(), StringComparison.CurrentCultureIgnoreCase))) // check if item is NOT assigned to current user
+                if (!(String.Equals(assignment.Teacher.TeacherID.Trim(), UserAttributes.SAML.TSSUserID.Trim(), StringComparison.CurrentCultureIgnoreCase))) // check if item is NOT assigned to current user
                 {
                     // if item is not assigned to user, don't save the score and instead return an error message
                     return Json(new { success = false, data = String.Empty, message = "You cannot score responses that are assigned to another user." });
@@ -195,12 +202,12 @@ namespace TSS.MVC.Controllers
                 {
                     successMessage = ConfigurationManager.AppSettings["SCORE_SUBMITTED_MESSAGE"].ToString();
                 }
-                return Json(new { success = true, data = xml.ToString(), message = successMessage });
+                return Json(new { success = true, data = xml.ToString(), message = successMessage, ScoreStatus = (StudentResponseAssignment.ScoreStatusCode.TentativeScore.ToString() == "TentativeScore" ? "Tentatively Scored" : "Scored") });
             }
             catch (Exception exc)
             {
-                return Json(new { success = false, data = string.Format("\"Error Code\": \"{0}\"  \"Message\":\"{1}\"", 4004, exc.Message) });
-            
+                LoggerRepository.LogException(exc);
+                return Json(new { success = false, data = string.Format("\"Error Code\": \"{0}\"  \"Message\":\"{1}\"", 4004, exc.Message) });            
             }
 		}
 
@@ -221,10 +228,10 @@ namespace TSS.MVC.Controllers
                 var assignment = _studentResponseService.GetAssignmentById(id);
 
                 #region Redirect to Response list if item is not assigned to current user
-                if (!(String.Equals(assignment.Teacher.TeacherID.Trim(), UserAttributes.SAML.sbacUUID.Trim(), StringComparison.CurrentCultureIgnoreCase))) // check if item is NOT assigned to current user
+                if (!(String.Equals(assignment.Teacher.TeacherID.Trim(), UserAttributes.SAML.TSSUserID.Trim(), StringComparison.CurrentCultureIgnoreCase))) // check if item is NOT assigned to current user
                 {
-                    // if item is not assigned to user, redirect them back to the item list page (they should not be able to score)
-                    return RedirectToAction("ItemList");
+                    //if item is not assigned to current user, throw error
+                    throw new Exception("The student response is not assigned to current user.");
                 }
                 #endregion
 
@@ -237,7 +244,7 @@ namespace TSS.MVC.Controllers
 		        int passage = itemType.Passage;
 		        if (itemType.Passage != 0)
 		        {
-		            otherItems = _studentResponseService.GetResponsesFromItemGroup(assignment,itemType.Passage);
+                    otherItems = _studentResponseService.GetResponsesFromItemGroup(assignment, itemType.Passage);
 		        }
 		        List<ContentRequestItem> Items = new List<ContentRequestItem>();
 		        Items.Add(
@@ -288,6 +295,7 @@ namespace TSS.MVC.Controllers
 		        }
             catch (Exception exc)
             {
+                LoggerRepository.LogException(exc);
                 throw new Exception("Error Code: 4005", exc);
             }
          

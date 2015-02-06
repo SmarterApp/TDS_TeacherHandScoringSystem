@@ -21,10 +21,12 @@ using SharpArch.Domain.Events;
 using Microsoft.Practices.ServiceLocation;
 using SharpArch.Web.Mvc.Castle;
 using SharpArch.Web.Mvc.ModelBinder;
+using TSS.Data.DataDistribution;
 using TSS.MVC.Controllers;
 using TSS.Services;
 using System.Configuration;
 using System.Net;
+
 
 namespace TSS.MVC
 {
@@ -47,7 +49,7 @@ namespace TSS.MVC
 
         protected void Application_BeginRequest(object sender, EventArgs e)
         {
-            
+
         }
 
         protected void Application_Start()

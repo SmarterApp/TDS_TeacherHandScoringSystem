@@ -10,17 +10,74 @@
 #endregion
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
+
+using System.Text;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
+
 using TSS.Data.Sql;
+
 using TSS.Domain;
 using TSS.Domain.DataModel;
+using TSS.Data;
+
+using TSS.Data;
+using TSS.Data.DataDistribution;
+
 
 namespace TSS.Data
 {
     public class StudentResponseRepository :  BaseRepository,IStudentResponseRepository
     {
+
+        public StudentResponseRepository()
+        {
+        }
+
+        
+        void LogParameters(SqlCommand command)
+        {
+            string output = "";
+            if (ConfigurationManager.AppSettings["debug.logsql"] == "true" ||
+                ConfigurationManager.AppSettings["debug.loglocal"] == "true")
+            {
+                output = "SQL: " + command.CommandText;
+
+                foreach (SqlParameter param in command.Parameters)
+                {
+                    output += "    param: " + param.ParameterName + " value: " + param.Value.ToString();
+                }
+
+                // This code is compiled out in prod versions...
+                System.Diagnostics.Debug.WriteLine(output);
+
+                if (ConfigurationManager.AppSettings["debug.logsql"] == "true")
+                {
+                    SqlCommand lcmd = CreateCommand(CommandType.StoredProcedure, "dbo.sp_SaveLog");
+                    Log log = new Log();
+                    log.Category = LogCategory.Application;
+                    log.Level = LogLevel.Debug;
+                    log.IpAddress = "NA";
+                    log.LogDate = DateTime.UtcNow;
+                    log.Details = output;
+                    log.Message = "Sproc";
+
+                    // Todo - fix log repository to be more public
+                    lcmd.AddValue("Category", log.Category);
+                    lcmd.AddValue("Details", log.Details);
+                    lcmd.AddValue("IpAddress", log.IpAddress);
+                    lcmd.AddValue("Level", log.Level);
+                    lcmd.AddValue("LogDate", log.LogDate);
+                    lcmd.AddValue("Message", log.Message);
+                    ExecuteNonQuery(lcmd);
+                }
+            }
+        }
+
         public bool RemoveAssignments(string[] assignmentIDs)
         {
             bool rtnCode = false;
@@ -202,11 +259,13 @@ namespace TSS.Data
             page.AllAssignmentIds = string.Join("|", assignedItems);
 
             page.FilterItems = filterItems;
+
             //PAGED RESULT
             page.Assignments = pagedListResults.ToList();
 
             return page;
         }
+
         #region Private helper
         private IEnumerable<Guid> GetAssignedItems(AssignedItemsQuery query, string xxx)
         {
@@ -220,7 +279,10 @@ namespace TSS.Data
                                  FirstOrDefault());
             command.AddValue("ScorerFilter", query.filters.Where(x => x.Key == "t-Name").Select(x => x.Value).FirstOrDefault());
 
-             ExecuteReader(command, delegate(IColumnReader reader)
+            LogParameters(command);
+
+            ExecuteReader(command, delegate(IColumnReader reader)
+
             {
                 while (reader.Read())
                 {
@@ -240,26 +302,27 @@ namespace TSS.Data
             {
                 SqlCommand command = CreateCommand(CommandType.StoredProcedure, "[dbo].[sp_GetItemListFilters]");
                 command.AddValue("teacherIDlist", string.Join("|", query.teacherUUIDs.Distinct().ToList()));
+                LogParameters(command);
+
                 ExecuteReader(command, delegate(IColumnReader reader)
                                            {
                                                while (reader.Read())
                                                {
                                                    FilterResult result = new FilterResult()
-                                                                                 {
-                                                                                     Grade = reader.GetString("Grade"),
-                                                                                     Subject = reader.GetString("Subject"),
-                                                                                     TestName = reader.GetString("TestName"),
-                                                                                     TestID =  reader.GetString("TestID"),
-                                                                                     SessionId = reader.GetString("SessionId"),
-                                                                                     AssignedTeacherName = reader.GetString("AssignedTo"),
-                                                                                     AssignedTeacherID = reader.GetString("TeacherID")
+                                                   {
+                                                       Grade = reader.GetString("Grade"),
+                                                       Subject = reader.GetString("Subject"),
+                                                       TestName = reader.GetString("TestName"),
+                                                       TestID = reader.GetString("TestID"),
+                                                       SessionId = reader.GetString("SessionId"),
+                                                       AssignedTeacherName = reader.GetString("AssignedTo"),
+                                                       AssignedTeacherID = reader.GetString("TeacherID")
 
-                                                                                 };
+                                                   };
+
                                                    FilterItems.Add(result);
                                                }
                                            });
-
-
             }
             return FilterItems;
         }
@@ -280,6 +343,9 @@ namespace TSS.Data
                                  FirstOrDefault());
             command.AddValue("ScorerFilter",
                              query.filters.Where(x => x.Key == "t-Name").Select(x => x.Value).FirstOrDefault());
+
+            LogParameters(command);
+
             ExecuteReader(command, delegate(IColumnReader reader)
                                        {
                                            reader.FixNulls = true;
@@ -317,6 +383,8 @@ namespace TSS.Data
                                  FirstOrDefault());
             command.AddValue("ScorerFilter",
                              query.filters.Where(x => x.Key == "t-Name").Select(x => x.Value).FirstOrDefault());
+            
+            LogParameters(command);
             ExecuteReader(command, delegate(IColumnReader reader)
             {
                 reader.FixNulls = true;
@@ -326,7 +394,9 @@ namespace TSS.Data
                                                   {
                                                       AssignedTeacherName = reader.GetString("AssignedTo"),
                                                       SessionId = reader.GetString("SessionId"),
-                                                      ScoreStatus = (StudentResponseAssignment.ScoreStatusCode)(reader.GetInt32("ScoreStatus")),
+                                                      ScoreStatus =
+                                                          (StudentResponseAssignment.ScoreStatusCode)
+                                                          (reader.GetInt32("ScoreStatus")),
                                                       ItemKey = reader.GetInt32("ItemKey"),
                                                       ItemTypeDescription = reader.GetString("ItemTypeDescription"),
                                                       StudentName = reader.GetString("StudentName"),

@@ -98,6 +98,19 @@ namespace TSS.Domain
             //|6_107255|TE|INSTITUTION|1|||000000|Hawaii Department of Education|||9999|Training Complex Area A|99999|Demo School Group 1|9997|Training School B|
             //|DS1|TSS All Item Scorer|DISTRICT|1000|QA Client|||UT|UTAH|||DS1|District 1|||||
             s = s.Substring(1);
+
+            int pipes = 0;
+            foreach (char c in s)
+            {
+                if (c == '|')
+                    pipes++;
+            }
+
+            // Make sure the tenancy chain is the proper length for this application.
+            if (pipes != 17)
+            {
+                throw new Exception("invalid response format from OpenAM - missing entries in tenancy chain");
+            }
             string[] sa = s.Split(char.Parse("|"));
             
             this.RoleID = sa[0];

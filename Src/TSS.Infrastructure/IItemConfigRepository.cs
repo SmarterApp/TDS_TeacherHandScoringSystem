@@ -15,6 +15,7 @@ namespace TSS.Data
 {
     public interface IItemConfigRepository
     {
+
         List<ItemType> GetItemConfiguraitons();
         void UpdateItemTypes(List<ItemType> types);
     }

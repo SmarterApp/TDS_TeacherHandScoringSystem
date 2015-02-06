@@ -58,9 +58,10 @@ namespace TSS.MVC.Models
 		public int ReassignTeacher { get; set; }
 
 		public bool IsAdmin { get; set; }
-        public string UUID { get; set; }
+        public string TSSUserID { get; set; }
+        public bool UserEmailAsUuid { get; set; }
 
-		#endregion
+	    #endregion
 
 		#region Constructors
 
@@ -68,7 +69,8 @@ namespace TSS.MVC.Models
 		{
 			//See if the logged in user is an Admin
 			this.IsAdmin = UserAttributes.SAML.IsAdministrator;
-            this.UUID = UserAttributes.SAML.sbacUUID;
+            this.TSSUserID = UserAttributes.SAML.TSSUserID;
+            this.UserEmailAsUuid = UserAttributes.UseEmailAsUuid;
 
 		}
 

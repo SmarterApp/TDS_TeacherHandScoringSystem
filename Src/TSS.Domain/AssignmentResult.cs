@@ -15,6 +15,7 @@ namespace TSS.Domain
 {
     public class AssignmentResult
     {
+
         public string AssignedTeacherName { get; set; }
         public Guid AssignmentId { get; set; }
         public string ItemTypeDescription { get; set; }

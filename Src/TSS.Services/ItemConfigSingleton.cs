@@ -24,24 +24,26 @@ namespace TSS.Services
     public sealed class ItemConfigSingleton 
     {
         private static volatile ItemConfigSingleton instance;
-        private static object syncRoot = new Object();
         private List<ItemType> ItemTypes { get; set; }
         private ItemConfigRepository repo = null;
+        private static readonly Object locker = new Object();
+
         private ItemConfigSingleton() 
         {
             repo = new ItemConfigRepository();
             ItemTypes = repo.GetItemConfiguraitons();
         }
+       
         public static ItemConfigSingleton Instance
         {
             get
             {
                 if (instance == null)
                 {
-                    lock (syncRoot)
+                    lock (locker)
                     {
                         if (instance == null)
-                            instance = new ItemConfigSingleton();
+                        instance = new ItemConfigSingleton();
                     }
                 }
                 return instance;

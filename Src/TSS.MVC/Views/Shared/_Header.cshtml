@@ -1,6 +1,17 @@
 ﻿@{
     ViewBag.LogoutURL = Request.Cookies["LogoutURL"] != null ? Request.Cookies["LogoutURL"].Value : "https://drc-dev-secure.opentestsystem.org/auth/UI/Logout";
-    ViewBag.GivenName = TSS.MVC.UserAttributes.SAML.Mail;
+    try
+    {
+        ViewBag.GivenName = TSS.MVC.UserAttributes.SAML.Mail;
+    }catch
+    {
+        ViewBag.GivenName = "";
+        if (HttpContext.Current.Request.Cookies.Get("TSS-MAIL") != null)
+        {
+            ViewBag.GivenName = TSS.MVC.Encryption.SimpleDecrypt(HttpContext.Current.Request.Cookies.Get("TSS-MAIL").Value, "45AC7AE85F63E668", "B262ACF431AD96F4", 0);
+        }
+    }
+    ViewBag.HdrOpenAmSites = new TSS.MVC.Models.OpenamSiteModel().DropdownInfo;
 }
 <script type="text/javascript">
 
@@ -24,6 +35,11 @@
 <header>
     <div class="navbar navbar-fixed-top">
         <div class="top-navbar">
+            <span class="oam-navigate-system">THSS</span>
+            <span class="oam-navigate-header">
+            @Html.DropDownList("HdrOpenAmSites",
+                               (IEnumerable<SelectListItem>)ViewBag.HdrOpenAmSites);
+                </span>
             <span class="top-navbar-text">
                 <a class="navbar-link hide-control" href="#">Settings</a>Logged in as @ViewBag.GivenName | <a class="navbar-link" href="@System.Configuration.ConfigurationManager.AppSettings["USER_GUIDE_LOCATION"]" >Help</a> | <a class="navbar-link" id="btnLogout" href="@ViewBag.LogoutURL">Logout</a>
             </span>
@@ -38,3 +54,13 @@
     </div>
     <!-- topbar / NavBar ends -->
 </header>
+
+<script type="text/javascript">
+    $('#HdrOpenAmSites').on('change', function(e) {
+        var target = e.source || e.target;
+        var destination = $(target).find('option:selected').val();
+        if (destination && destination.indexOf && destination.indexOf('http') >= 0) {
+            window.location.replace(destination);
+        }
+    });
+</script>

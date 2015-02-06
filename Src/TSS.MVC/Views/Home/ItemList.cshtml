@@ -1,10 +1,14 @@
-﻿@using TSS.MVC.Models
+﻿@using TSS.Data.DataDistribution
+@using TSS.MVC
+@using TSS.MVC.Models
 @model ItemListViewModel
 
 
 @{
     ViewBag.Title = "Response List";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.TenancyList = TSS.MVC.UserAttributes.SAML.TenancyChainList;
+    ViewBag.ActiveDistrict = TSS.MVC.UserAttributes.SAML.ActiveDistrictId;
 }
 
 <div id="dialog-reassign" title="Reassign Selected Students">
@@ -62,7 +66,54 @@
             <div>
                 <div class="btn-group">
                     <table>
-                        <tr>
+                        <tr> @if (ViewBag.TenancyList != null)
+                            {
+                                if ((ViewBag.TenancyList as List<TSS.Domain.TenancyChain>).Count > 1 &&
+                                    DataConnections.DistrictLookUp.Count > 1)
+                                {
+                                   
+                                <td>
+                                    <b>District:</b>
+                                </td>
+                                <td class="tableSpace">&nbsp;</td>
+                                <td>
+
+                                    <select data-col="11" class="chosen-select" id="ddlDistrictSelect">
+                                        <option value="1001">Test District</option>
+
+                                        @foreach (var item in ViewBag.TenancyList)
+                                        {
+                                            <option value="@item.DistrictID">@item.District</option>
+                                        }
+
+                                    </select>
+
+                                    <script type="text/javascript">
+                                        $(function () {
+                                            $("#ddlDistrictSelect").on("change", function (e) {
+
+                                                var district = $(this.options[this.selectedIndex]).val();
+                                                document.cookie = "ACTIVE_DISTRICT=" + district + ";path=/";
+                                                setTimeout(function () {
+                                                    window.location.href = "/";
+                                                }, 1000);
+
+                                            });
+
+                                            $("#ddlDistrictSelect option").each(function () {
+                                                var opt = $(this).val();
+                                                if (opt === "@ViewBag.ActiveDistrict") {
+                                                    $(this).prop("selected", true);
+                                                }
+                                            });
+
+                                        });
+
+                                    </script>
+                                </td>
+                                <td class="tableSpace">&nbsp;</td> 
+                                }
+                            }
                             <td>
                                 <b>Test:</b>
                             </td>
@@ -305,7 +356,7 @@
         q.sortColumn = postData.sortColumn;
         q.sortDirection = postData.sortDirection;
         SaveQuery(q);
-        
+
         $('#datatable2_filter').hide();
         $('#datatable2_length').hide();
 
@@ -488,6 +539,9 @@
             width: 450,
             modal: true,
             autoOpen: false,
+            dialogClass: 'dlgfixed',
+            position: "center",
+            overlay: { display: 'none', opacity: 0 },
             buttons: {
                 "Mark Selected as Complete": function () {
                     //Save
@@ -507,7 +561,8 @@
         var CloseDialogBox = function (obj) {
             $(obj).dialog("close");
         };
-        
+
+
         var reassignComplete = $("#reassign-complete").dialog({
             resizable: false,
             height: 150,
@@ -530,7 +585,7 @@
         var reassignDialog = $("#dialog-reassign").dialog({
             resizable: false,
             height: 350,
-            width: 450,
+            width: '450px',
             modal: true,
             autoOpen: false,
             dialogClass: 'dlgfixed',
@@ -559,12 +614,14 @@
                     //if (ReassignItems()) {
                     //    $(this).dialog("close");
                     //}
+
                 },
                 Cancel: function () {
                     $(this).dialog("close");
                 }
             }
         });
+
         var GetTeachers = function () {
             $.ajax({
                 url: '/api/Teacher/GetScorersforReAssign/',
@@ -575,11 +632,22 @@
                         $("#PossibleScorers").append(select);
                         $.each(data, function () {
                             var isadmin = "@Model.IsAdmin";
-                            if (this.uuid != "@Model.UUID" ||  isadmin == "True") {
-                                var option = $("<option value='" + this.username + "'>" + this.firstName + " " + this.lastName + "</option>");
-                                $("#PossibleScorers").append(option);
+                            var useEmailAsUuid = "@Model.UserEmailAsUuid";
+                            var option;
+                            if (useEmailAsUuid) {
+                                //exclude the current user(if not administrator) from the dropdown scorers
+                                if (this.email != "@Model.TSSUserID" || isadmin == "True") {
+                                    option = $("<option value='" + this.email + "' title='" + this.email + "'>" + this.firstName + " " + this.lastName + "</option>");
+                                    $("#PossibleScorers").append(option);
+                                }
+                            }else {
+                                if (this.username != "@Model.TSSUserID" || isadmin == "True") {
+                                    option = $("<option value='" + this.username + "' title='" + this.username + "'>" + this.firstName + " " + this.lastName + "</option>");
+                                    $("#PossibleScorers").append(option);
+                                }
                             }
-
+                            
+                            
                         });
                     }
                 },
@@ -593,7 +661,7 @@
             var objects = $('#datatable2 tbody input[type=checkbox]:checked');
             var items = [];
             var scorer = $("#PossibleScorers option:selected").val();
-            var name = $("#PossibleScorers option:selected").text();
+            var name = $("#PossibleScorers option:selected").text();            
 
             for (var i = 0; i < objects.length; i++) {
 
@@ -714,7 +782,7 @@
 
         //});
         $("#completeButton").button().click(function (event) {
-
+            $(".dlgfixed").center(true);
             //All the checked rows should be removed.
             //Spin through each row in the DataTable, if that row is checked, remove it.
             //Need to grab the correctly sorted and filtered dataset.
@@ -748,10 +816,6 @@
             //START VALIDATION
             var closeIt = false;
             var getObjects = function () { return $('#datatable2 tbody input[type=checkbox]:checked') };
-            if (getObjects().length == 0) {
-                alert("Please select at least one name to mark as complete");
-                return;
-            }
             var validateSelections = function (objects) {
                 var hasConfirmDisplayed = false;
                 for (var i = 0; i < objects.length; i++) {

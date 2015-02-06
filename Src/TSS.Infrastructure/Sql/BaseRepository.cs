@@ -14,6 +14,7 @@ using System.Xml;
 using System;
 using System.Data;
 using System.Data.SqlClient;
+using TSS.Data.DataDistribution;
 
 
 namespace TSS.Data.Sql
@@ -40,18 +41,31 @@ namespace TSS.Data.Sql
             _connectionString = connectionString;
         }
 
-        protected SqlCommand CreateCommand(CommandType cmdType, string cmdText)
+        protected SqlCommand CreateCommand(CommandType cmdType, string cmdText, SqlConnection SqlConnection)
         {
-            if (string.IsNullOrEmpty(_connectionString)) _connectionString = ConfigurationManager.ConnectionStrings["TSS"].ConnectionString;
-            SqlConnection connection = new SqlConnection(_connectionString);
-
-            SqlCommand cmd = new SqlCommand(cmdText, connection)
-                {
-                    CommandType = cmdType,
-                    CommandTimeout = SqlCommandTimeout
-                };
+            SqlCommand cmd = new SqlCommand(cmdText, SqlConnection)
+            {
+                CommandType = cmdType,
+                CommandTimeout = SqlCommandTimeout
+            };
 
             return cmd;
+        }
+
+        protected SqlCommand CreateCommand(CommandType cmdType, string cmdText,string districtId)
+        {
+            // Breaking news: don't get the district ID from the chain.  Just use the default 
+            // connection.
+            SqlConnection conn = new SqlConnection(DataConnections.GetConnectionString(districtId));
+            
+            //  new SqlConnection(DataConnections.GetConnectionString(districtId));
+            return CreateCommand(cmdType, cmdText, conn);
+        }
+
+        protected SqlCommand CreateCommand(CommandType cmdType, string cmdText)
+        {
+            string districtId = SessionConnector.Instance.districtId;
+            return CreateCommand(cmdType, cmdText, districtId);
         }
 
         protected int ExecuteNonQuery(SqlCommand cmd)

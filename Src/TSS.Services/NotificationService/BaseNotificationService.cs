@@ -29,15 +29,13 @@ namespace TSS.Services
 
         #region Fields
 
-        protected readonly ILoggerService LogService;
 
         #endregion
 
         #region Constructor
 
-        protected BaseNotificationService(ILoggerService logService)
+        protected BaseNotificationService()
         {
-            LogService = logService;
         }
 
         #endregion

@@ -12,15 +12,19 @@ using System.Data;
 using System.Data.SqlClient;
 using TSS.Data.Sql;
 using TSS.Domain.DataModel;
+using TSS.Data.DataDistribution;
 
 namespace TSS.Data
 {
-    public class TestImportRepository: BaseRepository, ITestImportRepository
+    public class TestImportRepository : BaseRepository, ITestImportRepository
     {
-        public bool SaveTeacher(Teacher aTeacher)
+
+        public bool SaveTeacher(Teacher aTeacher,string district)
         {
-            
-            SqlCommand command = CreateCommand(CommandType.StoredProcedure, "dbo.sp_SaveTeacher");
+
+            SqlCommand command = CreateCommand(CommandType.StoredProcedure, 
+                "dbo.sp_SaveTeacher",
+                district);
             command.AddValue("TeacherID", aTeacher.TeacherID);
             command.AddValue("TeacherName", aTeacher.Name);
             bool rtnCode = true;
@@ -36,9 +40,9 @@ namespace TSS.Data
             return rtnCode == false;
         }
 
-        public bool SaveStudent(Student aStudent)
+        public bool SaveStudent(Student aStudent,string district)
         {
-            SqlCommand command = CreateCommand(CommandType.StoredProcedure, "dbo.sp_SaveStudent");
+            SqlCommand command = CreateCommand(CommandType.StoredProcedure, "dbo.sp_SaveStudent", district);
             command.AddValue("StudentId", aStudent.StudentId);
             command.AddValue("DOB", aStudent.Dob);
             command.AddValue("FirstName", aStudent.FirstName);
@@ -60,9 +64,9 @@ namespace TSS.Data
             return rtnCode == false;
         }
 
-        public bool SaveTest(Test aTest)
+        public bool SaveTest(Test aTest,string district)
         {
-            SqlCommand command = CreateCommand(CommandType.StoredProcedure, "dbo.sp_SaveTest");
+            SqlCommand command = CreateCommand(CommandType.StoredProcedure, "dbo.sp_SaveTest",district);
             command.AddValue("TestID", aTest.TestId);
             command.AddValue("Name", aTest.Name);
             command.AddValue("Mode", aTest.Mode);
@@ -73,7 +77,7 @@ namespace TSS.Data
             command.AddValue("AssessmentType", aTest.AssessmentType);
             command.AddValue("Bank", aTest.Bank);
             command.AddValue("Contract", aTest.Contract);
-            
+
             bool rtnCode = true;
             ExecuteReader(command, delegate(IColumnReader reader)
             {
@@ -86,10 +90,10 @@ namespace TSS.Data
             return rtnCode == false;
         }
 
-        public bool SaveDistrictAndSchool(string xmlInputs)
+        public bool SaveDistrictAndSchool(string xmlInputs,string district)
         {
-            SqlCommand command = CreateCommand(CommandType.StoredProcedure, "dbo.sp_SaveDistrictAndSchool");
-            command.AddValue("xmlInputs",xmlInputs);
+            SqlCommand command = CreateCommand(CommandType.StoredProcedure, "dbo.sp_SaveDistrictAndSchool",district);
+            command.AddValue("xmlInputs", xmlInputs);
             bool rtnCode = true;
             ExecuteReader(command, delegate(IColumnReader reader)
             {
@@ -103,9 +107,9 @@ namespace TSS.Data
             return rtnCode == false;
         }
 
-        public bool BatchProcessAssingmentAndResponse(string xmlInputs)
+        public bool BatchProcessAssingmentAndResponse(string xmlInputs,string district)
         {
-            SqlCommand command = CreateCommand(CommandType.StoredProcedure, "dbo.sp_SaveAssignmentAndResponses");
+            SqlCommand command = CreateCommand(CommandType.StoredProcedure, "dbo.sp_SaveAssignmentAndResponses",district);
             command.AddValue("xmlInputs", xmlInputs);
 
             bool rtnCode = true;

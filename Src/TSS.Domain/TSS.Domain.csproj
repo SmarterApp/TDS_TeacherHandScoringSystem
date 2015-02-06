@@ -79,28 +79,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\Common\AssemblyVersion.cs">
-      <Link>Properties\AssemblyVersion.cs</Link>
-    </Compile>
-    <Compile Include="..\..\Common\CommonAssemblyInfo.cs">
-      <Link>Properties\CommonAssemblyInfo.cs</Link>
-    </Compile>
     <Compile Include="ApiAccessKeys.cs" />
     <Compile Include="AssignedItemsQuery.cs" />
     <Compile Include="Administrator.cs" />
     <Compile Include="AssignmentPage.cs" />
     <Compile Include="AssignmentResult.cs" />
+    <Compile Include="ContentRequest.cs" />
     <Compile Include="DataModel\Class.cs" />
     <Compile Include="ItemTypeJson.cs" />
     <Compile Include="ItemScoreRequest.cs" />
-    <Compile Include="IRiS\ContentRequest.cs" />
-    <Compile Include="IRiS\DateTimeJavaScript.cs" />
-    <Compile Include="IRiS\Utilities.cs" />
     <Compile Include="oAuthToken.cs" />
+    <Compile Include="OpenAmSite.cs" />
     <Compile Include="PagedList\Extensions.cs" />
     <Compile Include="PagedList\IPagedList.cs" />
     <Compile Include="PagedList\PagedList.cs" />
-    <Compile Include="Rendering\RenderingContentRequest.cs" />
     <Compile Include="ResultBase.cs" />
     <Compile Include="TenancyChain.cs" />
     <Compile Include="UserPermissions.cs" />
@@ -136,5 +128,7 @@
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
+
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
 </Project>

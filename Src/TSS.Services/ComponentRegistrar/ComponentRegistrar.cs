@@ -60,22 +60,25 @@ namespace TSS.Services
                     appSettings = ConfigurationManager.AppSettings
                 }));
 
-            var minLogLevel =
+            // no longer need the logger service.  Use repo directly
+            /*  
+             *             var minLogLevel =
                 (LogLevel)Enum.Parse(typeof(LogLevel), ConfigurationManager.AppSettings["MinLogLevel"]);
 
-            container.Register(
+
+             * container.Register(
                Component.For<ILoggerService>()
                 .ImplementedBy<LoggerService>()
                 .DependsOn(new
                 {
                     minLevel = minLogLevel
-                }));
+                }));  */
 
             container.Register(
                 Component.For<IEmailService>()
                     .ImplementedBy<EmailService>());
 
-          
+           
             container.Register(
                 AllTypes
                     .FromAssemblyNamed("TSS.Services")

@@ -94,23 +94,15 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\Common\AssemblyVersion.cs">
-      <Link>Properties\AssemblyVersion.cs</Link>
-    </Compile>
-    <Compile Include="..\..\Common\CommonAssemblyInfo.cs">
-      <Link>Properties\CommonAssemblyInfo.cs</Link>
-    </Compile>
     <Compile Include="ComponentRegistrar\ComponentRegistrar.cs" />
     <Compile Include="ConfigService\ConfigService.cs" />
     <Compile Include="ConfigService\IConfigService.cs" />
     <Compile Include="ExportService\ExportService.cs" />
     <Compile Include="ExportService\IExportService.cs" />
-    <Compile Include="ILoggerService.cs" />
     <Compile Include="IStudentResponseService.cs" />
     <Compile Include="ITeacherService.cs" />
     <Compile Include="ItemConfigSingleton.cs" />
     <Compile Include="ITestImportService.cs" />
-    <Compile Include="LoggerService.cs" />
     <Compile Include="StudentResponseService.cs" />
     <Compile Include="TeacherService.cs" />
     <Compile Include="TestImportService.cs" />
@@ -160,8 +152,6 @@
       <Name>TSS.Data</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="RenderingService\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

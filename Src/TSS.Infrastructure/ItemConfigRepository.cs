@@ -15,15 +15,24 @@ using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
+using System.Web;
 using System.Xml;
 using System.Xml.Serialization;
 using TSS.Data.Sql;
+using TSS.Domain;
 using TSS.Domain.DataModel;
+using TSS.Data.DataDistribution;
 
 namespace TSS.Data
 {
     public class ItemConfigRepository : BaseRepository,IItemConfigRepository
     {
+
+        public ItemConfigRepository()
+        {
+        }
+
         public List<ItemType> GetItemConfiguraitons()
         {
             List<ItemType> itemTypes = new List<ItemType>();
@@ -32,74 +41,74 @@ namespace TSS.Data
             SqlCommand command = CreateCommand(CommandType.StoredProcedure, "[dbo].[sp_GetItemConfigurations]");
 
             ExecuteReader(command, delegate(IColumnReader reader)
-            {
-                reader.FixNulls = true;
-                //load conditon codes
-                while (reader.Read())
-                {
+                                       {
+                                           reader.FixNulls = true;
+                                           //load conditon codes
+                                           while (reader.Read())
+                                           {
                                                
-                    ConditionCode conditionCode = new ConditionCode()
-                                                        {
-                                                            ConditionCodeId = reader.GetInt32("ConditionCodeId"),
-                                                            DimensionId = reader.GetInt32("DimensionId"),
-                                                            FullName = reader.GetString("FullName"),
-                                                            ShortName = reader.GetString("ShortName")
-                                                        };
+                                               ConditionCode conditionCode = new ConditionCode()
+                                                                                  {
+                                                                                      ConditionCodeId = reader.GetInt32("ConditionCodeId"),
+                                                                                      DimensionId = reader.GetInt32("DimensionId"),
+                                                                                      FullName = reader.GetString("FullName"),
+                                                                                      ShortName = reader.GetString("ShortName")
+                                                                                  };
 
-                    conditionCodes.Add(conditionCode);
-                }
-                if (reader.NextResult())
-                {
+                                               conditionCodes.Add(conditionCode);
+                                           }
+                                           if (reader.NextResult())
+                                           {
                                                
-                    while (reader.Read())
-                    {
-                        Dimension dimension = new Dimension()
-                                                    {
-                                                        DimensionId = reader.GetInt32("DimensionId"),
-                                                        BankId = reader.GetInt32("BankKey"),
-                                                        ItemKey = reader.GetInt32("ItemKey"),
-                                                        Name = reader.GetString("Name"),
-                                                        Max = reader.GetInt32("Max"),
-                                                        Min = reader.GetInt32("Min"),
-                                                        ConditionCodes = new List<ConditionCode>()
-                                                    };
-                        if (conditionCodes.Any(c => c.DimensionId == dimension.DimensionId))
-                            dimension.ConditionCodes = conditionCodes.Where(c => c.DimensionId == dimension.DimensionId).ToList();
-                        dimensions.Add(dimension);
-                    }
-                }
-                if (reader.NextResult())
-                {
-                    while (reader.Read())
-                    {
+                                               while (reader.Read())
+                                               {
+                                                   Dimension dimension = new Dimension()
+                                                                              {
+                                                                                  DimensionId = reader.GetInt32("DimensionId"),
+                                                                                  BankId = reader.GetInt32("BankKey"),
+                                                                                  ItemKey = reader.GetInt32("ItemKey"),
+                                                                                  Name = reader.GetString("Name"),
+                                                                                  Max = reader.GetInt32("Max"),
+                                                                                  Min = reader.GetInt32("Min"),
+                                                                                  ConditionCodes = new List<ConditionCode>()
+                                                                              };
+                                                   if (conditionCodes.Any(c => c.DimensionId == dimension.DimensionId))
+                                                       dimension.ConditionCodes = conditionCodes.Where(c => c.DimensionId == dimension.DimensionId).ToList();
+                                                   dimensions.Add(dimension);
+                                               }
+                                           }
+                                           if (reader.NextResult())
+                                           {
+                                               while (reader.Read())
+                                               {
                                                    
-                        ItemType itemType = new ItemType()
-                        {
-                            BankKey = reader.GetInt32("BankKey"),
-                            ItemKey = reader.GetInt32("ItemKey"),
-                            Passage = reader.GetInt32("Passage"),
-                            // If HandScored is NULL, it must have been imported
-                            // before, so treat it as true
-                            HandScored = 
-                                reader.IsDBNull("HandScored") || 
-                                reader.GetBoolean("HandScored"),
+                                                   ItemType itemType = new ItemType()
+                                                                            {
+                                                                                BankKey = reader.GetInt32("BankKey"),
+                                                                                ItemKey = reader.GetInt32("ItemKey"),
+                                                                                Passage = reader.GetInt32("Passage"),
+                                                                                // If HandScored is NULL, it must have been imported
+                                                                                // before, so treat it as true
+                                                                                HandScored = 
+                                                                                    reader.IsDBNull("HandScored") || 
+                                                                                    reader.GetBoolean("HandScored"),
 
-                            Description = reader.GetString("Description"),
-                            ExemplarURL = reader.GetString("ExemplarURL"),
-                            Grade = reader.GetString("Grade"),
-                            Subject = reader.GetString("Subject"),
-                            Layout = reader.GetString("Layout"),
-                            RubricListXML = reader.GetString("RubricListXML"),
-                            TrainingGuideURL = reader.GetString("TrainingGuideURL"),
-                            Dimensions = new List<Dimension>()
-                        };
+                                                                                Description = reader.GetString("Description"),
+                                                                                ExemplarURL = reader.GetString("ExemplarURL"),
+                                                                                Grade = reader.GetString("Grade"),
+                                                                                Subject = reader.GetString("Subject"),
+                                                                                Layout = reader.GetString("Layout"),
+                                                                                RubricListXML = reader.GetString("RubricListXML"),
+                                                                                TrainingGuideURL = reader.GetString("TrainingGuideURL"),
+                                                                                Dimensions = new List<Dimension>()
+                                                                            };
 
-                        if (dimensions.Any(d => d.ItemKey == itemType.ItemKey && d.BankId == itemType.BankKey))
-                            itemType.Dimensions = dimensions.Where(d => d.ItemKey == itemType.ItemKey && d.BankId == itemType.BankKey).ToList();
-                        itemTypes.Add(itemType);
-                    }
-                }
-            });
+                                                   if (dimensions.Any(d => d.ItemKey == itemType.ItemKey && d.BankId == itemType.BankKey))
+                                                       itemType.Dimensions = dimensions.Where(d => d.ItemKey == itemType.ItemKey && d.BankId == itemType.BankKey).ToList();
+                                                   itemTypes.Add(itemType);
+                                               }
+                                           }
+                                       });
 
             return itemTypes;
         }
@@ -115,10 +124,32 @@ namespace TSS.Data
 
                     xmlSerializer.Serialize(xmlWriter, aList);
                     string xmlString = encoding.GetString(ms.ToArray());
-                    SqlCommand command = CreateCommand(CommandType.StoredProcedure,
-                                                       sproc);
-                    command.Parameters.AddWithValue("@xmlUpdates", xmlString);
-                    ExecuteNonQuery(command);
+                    // District code is back in.
+                    IEnumerable<string> districts = DataConnections.DistrictLookUp.Keys;
+                    List<string> dbSent = new List<string>();
+                    foreach (string district in districts)
+                    {
+                        SqlCommand command = CreateCommand(CommandType.StoredProcedure,
+                                                           sproc,district);
+                        if (dbSent.Contains(command.Connection.ConnectionString))
+                        {
+                            // Don't send to the same db more than once.
+                            continue;
+                        }
+                        dbSent.Add(command.Connection.ConnectionString);
+                        command.Parameters.AddWithValue("@xmlUpdates", xmlString);
+                        ExecuteNonQuery(command);
+                        if (HttpContext.Current.IsDebuggingEnabled)
+                        {
+                            LoggerRepository.SaveLog(new Log
+                                                                  {
+                                                                      Category = LogCategory.Application,
+                                                                      Level = LogLevel.Warning,
+                                                                      Message = string.Format("/api/item/submit"),
+                                                                      Details = xmlString
+                                                                  });
+                        }
+                    }
                 }
             }
         }

@@ -32,7 +32,7 @@ This is a REST endpoint that receives item configuraiton in json format. This is
 
 
 ### Test Report Receiver API(/api/test/submit)
-This is a REST endpoint that receives test reports in an XML format from the Test Delivery System.  
+This is a REST endpoint that receives test reports in an XML format from the Test Integration System.  
 Each result received is inserted into a database where it is picked up and processed.  
 
 ### THSS User Interface(TSS.MVC)      
@@ -75,126 +75,91 @@ Create an App User account and grant that account dbo access on the above DBs. [
 6) Load the item Package by using domain/api/item/submit/.
 
 ## Configuration
-#### Web.config
-	<?xml version="1.0" encoding="utf-8"?>
-	<configuration>
-		<connectionStrings configSource="App_Data\database.config"/>
-		<appSettings>
-			<add key="webpages:Version" value="2.0.0.0"/>
-			<add key="webpages:Enabled" value="false"/>
-			<add key="PreserveLoginUrl" value="true"/>
-			<add key="ClientValidationEnabled" value="false"/>
-			<add key="UnobtrusiveJavaScriptEnabled" value="false"/>
-			<add key="EMAIL_AS_UUID" value="true"/>
-			<add key="ART_API_URL" value="https://[SOME ART SERVER URL]/api/UserInfo/GetUserSearchInfo"/>
-			<add key="ART_OAUTH_URL" value="https://[SOME OPENAM URL]/auth/oauth2/access_token?realm=/[realm name where needed]"/>
-			<add key="ART_OAUTH_USERNAME" value="[Valid OpenAM Username]"/>
-			<add key="ART_OAUTH_REQUIRED" value="true"/>
-			<add key="ART_OAUTH_PASSWORD" value="[Password for Valid User]"/>
-			<add key="ART_OAUTH_SECRET" value="[Client Secret]"/>
-			<add key="ART_OAUTH_CLIENTID" value="[Client ID as Configured in OpenAM]"/>
-			<add key="IGNORE_TENANCY_CHAINS" value="False"/>
-			<add key="SAML_OWNER_PREFIX" value="sbac"/>
-			<add key="SAML_SESSIONREFRESH_URL" value="https:/[SOME OPENAM URL]/auth/identity/attributes?refresh=true"/>
-			<add key="SAML_REDIRECT" value="https://[The URL of the THSS Service/"/>
-			<add key="PERMISSIONS_SCHEMA_URL" value="https://[SOME PERMISSIONS SERVER URL]/permissions/rest/role?component=[Name of Component as Registered in Permissions Server]"/>
-			<!-- It is possible to load a pre-configured set of permissions from below instead of using the permissions API. Set LOAD_PERMISSIONS_FROM_LOCAL to true and load a role.json file in the App_Config folder. See Permissions API for JSON structure. -->
-			<add key="LOAD_PERMISSIONS_FROM_LOCAL" value="false"/>
-			<add key="ART_SCORER_DATA_CACHING_MINS" value="30"/>
-			<add key="IRIS_OPEN_SOURCE" value="True"/>
-    		<add key="IRIS_VENDOR_ID" value="2B3C34BF-064C-462A-93EA-41E9E3EB8333" />
-			<add key="IRIS_ROOT_URL" value="https://[Item Renderer URL]/IRiS/"/>
-			<add key="IRISBlackbox_ROOT_URL" value="https://[Item Renderer URL]/IRiS/"/>
+Per instance application configuration settings can be found in the following files:
 
-			<add key="USER_GUIDE_LOCATION" value="/content/UserGuide/[Name of User Guide Document].pdf"/>
-			<add key="SCORE_SUBMITTED_MESSAGE" value="The score has been saved."/>
-			<add key="SHOW_STATUS" value="true"/>
-			<!-- Minimum level for which logs should be created -->
-			<add key="MinLogLevel" value="Info"/>
-			<add key="COOKIE_TIMEOUT_MINS" value="30"/>
-		</appSettings>
-		<system.web.extensions>
-			<scripting>
-				<webServices>
-					<jsonSerialization maxJsonLength="2147483647"/>
-				</webServices>
-			</scripting>
-		</system.web.extensions>
-		<system.web>
-			<customErrors mode="Off"/>
-			<httpRuntime targetFramework="4.5"/>
-			<compilation debug="true" targetFramework="4.5"/>
-			<pages controlRenderingCompatibilityVersion="3.5" clientIDMode="AutoID">
-				<namespaces>
-					<add namespace="System.Web.Helpers"/>
-					<add namespace="System.Web.Mvc"/>
-					<add namespace="System.Web.Mvc.Ajax"/>
-					<add namespace="System.Web.Mvc.Html"/>
-					<add namespace="System.Web.Routing"/>
-					<add namespace="System.Web.WebPages"/>
-				</namespaces>
-			</pages>
-			<httpHandlers>
-				<add path="InitiateLogin.aspx" verb="*" type="SAML.Handler.InitiateLogin"/>
-				<add path="InitiateLogout.aspx" verb="*" type="SAML.Handler.InitiateLogout"/>
-				<add path="openam_keepalive.aspx" verb="*" type="SAML.Handler.openam_keepalive"/>
-			</httpHandlers>
-			<httpModules>
-				<add name="SAMLSessionCheck" type="SAML.Module.SAMLSessionCheck, FedletAPI"/>
-			</httpModules>
-		</system.web>
-		<system.webServer>
-			<handlers>
-				<add name="loginHandler" path="InitiateLogin.aspx" verb="*" type="SAML.Handler.InitiateLogin"/>
-				<add name="logoutHandler" path="InitiateLogout.aspx" verb="*" type="SAML.Handler.InitiateLogout"/>
-				<add name="keepaliveHandler" path="openam_keepalive.aspx" verb="*" type="SAML.Handler.openam_keepalive"/>
-			</handlers>
-			<modules runAllManagedModulesForAllRequests="true">
-				<add name="SAMLSessionCheck" type="SAML.Module.SAMLSessionCheck, FedletAPI"/>
-			</modules>
-			<validation validateIntegratedModeConfiguration="false"/>
-		</system.webServer>
-		<runtime>
-			<assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
-				<dependentAssembly>
-					<assemblyIdentity name="Microsoft.SqlServer.Types" publicKeyToken="89845dcd8080cc91" culture="neutral"/>
-					<bindingRedirect oldVersion="10.0.0.0" newVersion="11.0.0.0"/>
-				</dependentAssembly>
-				<dependentAssembly>
-					<assemblyIdentity name="Newtonsoft.Json" publicKeyToken="30AD4FE6B2A6AEED" culture="neutral"/>
-					<bindingRedirect oldVersion="0.0.0.0-4.5.0.0" newVersion="4.5.0.0"/>
-				</dependentAssembly>
-				<dependentAssembly>
-					<assemblyIdentity name="NHibernate" publicKeyToken="aa95f207798dfdb4" culture="neutral"/>
-					<bindingRedirect oldVersion="0.0.0.0-3.3.1.4000" newVersion="3.3.1.4000"/>
-				</dependentAssembly>
-				<dependentAssembly>
-					<assemblyIdentity name="Castle.Windsor" publicKeyToken="407dd0808d44fbdc" culture="neutral"/>
-					<bindingRedirect oldVersion="0.0.0.0-3.1.0.0" newVersion="3.1.0.0"/>
-				</dependentAssembly>
-				<dependentAssembly>
-					<assemblyIdentity name="System.Web.Helpers" publicKeyToken="31bf3856ad364e35"/>
-					<bindingRedirect oldVersion="1.0.0.0-2.0.0.0" newVersion="2.0.0.0"/>
-				</dependentAssembly>
-				<dependentAssembly>
-					<assemblyIdentity name="System.Web.Mvc" publicKeyToken="31bf3856ad364e35"/>
-					<bindingRedirect oldVersion="0.0.0.0-4.0.0.0" newVersion="4.0.0.0"/>
-				</dependentAssembly>
-				<dependentAssembly>
-					<assemblyIdentity name="System.Web.WebPages" publicKeyToken="31bf3856ad364e35"/>
-					<bindingRedirect oldVersion="1.0.0.0-2.0.0.0" newVersion="2.0.0.0"/>
-				</dependentAssembly>
-				<dependentAssembly>
-					<assemblyIdentity name="Newtonsoft.Json" publicKeyToken="30ad4fe6b2a6aeed" culture="neutral"/>
-					<bindingRedirect oldVersion="0.0.0.0-6.0.0.0" newVersion="6.0.0.0"/>
-				</dependentAssembly>
-			</assemblyBinding>
-		</runtime>
-	</configuration>
+* `<root>\Src\TSS.MVC\App_Data\settings.config`
+	
+			<?xml version="1.0"?>
+			<appSettings>
+				<add key="webpages:Version" value="2.0.0.0" />
+				<add key="webpages:Enabled" value="false" />
+				<add key="PreserveLoginUrl" value="true" />
+				<add key="ClientValidationEnabled" value="false" />
+				<add key="UnobtrusiveJavaScriptEnabled" value="false" />
+			
+				<add key="EMAIL_AS_UUID" value="true"/>
+				<add key="ART_API_URL" value="https://[SOME ART SERVER URL]/rest/user" />
+				<add key="ART_API_CLIENT" value="SBAC"/>
+				<add key="ART_OAUTH_URL" value="https://[SOME OPENAM URL]/auth/oauth2/access_token?realm=/[realm name where needed]"/>
+				<add key="ART_OAUTH_PASSWORD_GRANTTYPE" value="true" />
+				<add key="ART_OAUTH_USERNAME" value="[Valid OpenAM Username]"/>
+				<add key="ART_OAUTH_REQUIRED" value="true"/>
+				<add key="ART_OAUTH_PASSWORD" value="[Password for Valid User]"/>
+				<add key="ART_OAUTH_SECRET" value="[Client Secret]"/>
+				<add key="ART_OAUTH_CLIENTID" value="[Client ID as Configured in OpenAM]"/>
+		   	
+				<add key="IGNORE_TENANCY_CHAINS" value="False"/>
+				<add key="SAML_OWNER_PREFIX" value="sbac"/>
+				<add key="SAML_SESSIONREFRESH_URL" value="https:/[SOME OPENAM URL]/auth/identity/attributes?refresh=true"/>
+				<add key="SAML_REDIRECT" value="https://[The URL of the THSS Service]/"/>
+				<add key="PERMISSIONS_SCHEMA_URL" value="https://[SOME PERMISSIONS SERVER URL]/permissions/rest/role?component=[Name of Component as Registered in Permissions Server]"/>
+			
+				<!-- It is possible to load a pre-configured set of permissions from below instead of using the permissions API. Set LOAD_PERMISSIONS_FROM_LOCAL to true and load a role.json file in the App_Config folder. See Permissions API for JSON structure. -->
+				<add key="LOAD_PERMISSIONS_FROM_LOCAL" value="false"/>
+				<add key="ART_SCORER_DATA_CACHING_MINS" value="30"/>
+				<add key="IRIS_OPEN_SOURCE" value="True"/>
+    			<add key="IRIS_VENDOR_ID" value="2B3C34BF-064C-462A-93EA-41E9E3EB8333" />
+				<add key="IRIS_ROOT_URL" value="https://[Item Renderer URL]/IRiS/"/>
+				<add key="IRISBlackbox_ROOT_URL" value="https://[Item Renderer URL]/IRiS/"/>
+			
+				<add key="IRIS_PEM_LOCATION" value="~/App_Data/air-iris.ppk" />
+				<add key="IRIS_KEY_EXPIRE_MINUTES" value="30" />
+			
+				<add key="USER_GUIDE_LOCATION" value="/content/UserGuide/TSS_User_Guide.docx"/>
+				<add key="SCORE_SUBMITTED_MESSAGE" value="The score has been saved." />
+				<add key="ACCESS_DENIED" value="You are not Authorized User"/>
+				<add key="SHOW_STATUS" value="true" />
+
+				<!-- Minimum level for which logs should be created -->
+				<add key="MinLogLevel" value="Info" />
+				<add key="COOKIE_TIMEOUT_MINS" value="30"/>
+			</appSettings>
+				
+* `<root>\Src\TSS.MVC\App_Data\DataDistribution.config`
+
+		<?xml version="1.0"?>
+		<TSSDataDistribution>
+			<ConnectionStrings>
+				<ConnectionString name="DefaultConnection" connectionString="Data Source=[Standard SQL Server Connection String]" default="true">
+    				<Districts>
+        				<add id="1001"/>
+        				<add id="1002"/>
+        				<!-- This section is redundant and added for example only as all districts not explicitly mentioned in another connection string are added to the default configuration. -->
+        			</Districts>
+    			</ConnectionString>
+    			<ConnectionString  name="DistrictDatabaseConnection1" connectionString="Data Source=[Standard SQL Server Connection String]" default="true">
+    				<Districts>
+    					<add id="1003"/>
+    					<add id="1004"/>
+    					<add id="9999"/>
+    				</Districts>
+    			</ConnectionString>
+    			<!-- Additional connection strings may follow, here. -->
+    		</ConnectionStrings>
+    	</TSSDataDistribution>
+		
+* `<root>\Src\TSS.MVC\App_Data\sp.xml`
+* `<root>\Src\TSS.MVC\App_Data\sp-extended.xml`
+* `<root>\Src\TSS.MVC\App_Data\idp.xml`
+* `<root>\Src\TSS.MVC\App_Data\idp-extended.xml`
+* `<root>\Src\TSS.MVC\App_Data\fedlet.cot`
+* `<root>\Src\TSS.MVC\App_Data\reportxml_os.xsd`
+
+#### Additional Config information
 	
 #### Item Config JSON
 ##### A JSON array of items.
-		[
+	[
 	  {
 	    "HandScored": "1", //This flag is set to true for items that should be seen in the item list and scored by a proctor
 	    "Passage": null, // If an item should be grouped with other items, when viewing - the joining group should be listed here (e.g. 9999)
@@ -259,14 +224,14 @@ Create an App User account and grant that account dbo access on the above DBs. [
 	        "minPoints": "0"
 	      }
 	      //Additional Items follow
-	    ]
+	 ]
 
 
 ## Dependencies
 Test Hand Scoring System has the following dependencies that are necessary for it to compile and run. 
 please find dependencies in `<root>\package`
 
-###Runtime Dependencies
+###Compile/Runtime Dependencies
 * .Net Framework 4.5
 * Castle Windsor
 * Newtonsoft JSON.net
@@ -291,10 +256,7 @@ please find dependencies in `<root>\package`
 
 
 ## Future Enhancements 
-The following features and tasks are not included in the 1/19/2015 release:
+The following features and tasks are not included in the 2/6/2015 release:
 
-###1) Distribution of Data Across Database Servers
-This upcoming feature will allow users and their data to be distributed, by District Identifier, across databases. This feature is expected to be integrated before 1/27.
-
-###2) System and Integration Testing - 
-The Teacher Hand Scoring System has not undergone a complete system testing or integration testing with the Test Integration System, System and integration testing will be complete (with the features identified above) as of the 01/31/2015 release.
+###1) System and Integration Testing - 
+The Teacher Hand Scoring System has not undergone a complete system testing or integration testing with the Test Integration System, System and integration testing will be complete (with the features identified above) as of the 02/23/2015 release.

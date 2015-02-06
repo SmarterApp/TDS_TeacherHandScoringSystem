@@ -20,12 +20,6 @@ namespace TSS.Services
 {
     public interface ITestImportService
     {
-        bool SaveDistrictAndSchool(string xmlInputs);
-        bool SaveStudent(Student aStudent);
-        bool SaveTeacher(Teacher aTeacher);
-        bool SaveTest(Test aTest);
-        bool BatchProcessAssingmentAndResponse(string xmlInputs);
-
         Teacher PopulateTeacherFromTdsReport(TDSReport tdsReport);
         School PopulateSchoolFromTdsReport(TDSReport tdsReport);
         Student PopulateStudentFromTdsReport(TDSReport tdsReport);

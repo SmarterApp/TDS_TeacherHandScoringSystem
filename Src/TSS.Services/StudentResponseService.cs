@@ -14,6 +14,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TSS.Data;
+using TSS.Data.DataDistribution;
 using TSS.Domain;
 using TSS.Domain.DataModel;
 
@@ -59,7 +60,7 @@ namespace TSS.Services
         {
             return _studentResponseRepository.GetAssignmentsByAssignedToTeacherIDList(query);
         }
-         public List<ItemGroupEntry> GetResponsesFromItemGroup(StudentResponseAssignment assignment, int passage)
+        public List<ItemGroupEntry> GetResponsesFromItemGroup(StudentResponseAssignment assignment, int passage)
          {
              return _studentResponseRepository.GetResponsesFromItemGroup(assignment, passage);
              

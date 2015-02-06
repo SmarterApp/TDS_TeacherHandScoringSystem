@@ -21,6 +21,7 @@ using System.Web.Mvc;
 using System.Xml;
 using System.Xml.Serialization;
 using TSS.Data;
+using TSS.Data.DataDistribution;
 using TSS.Domain;
 using TSS.Domain.DataModel;
 using TSS.MVC.Areas.Api.Models;
@@ -30,36 +31,13 @@ namespace TSS.MVC.Areas.Api.Controllers
 {
     public class TestController : Controller
     {
-        private readonly ILoggerService _loggerService;
         private readonly ITestImportService _testImportService;
 
-        public TestController(ILoggerService loggerService,ITestImportService testImportService)
+        public TestController(ITestImportService testImportService)
         {
-            _loggerService = loggerService;
             _testImportService = testImportService;
         }
 
-        
-        //public ActionResult GetTest(int id)
-        //{
-        //   var result = _testService.GetTestById(id);
-        //   return SerializeResult<Test, TestViewModel>(result);
-        //}
-
-        
-        //public ActionResult GetItem(int id) 
-        //{
-        //    var item = _testService.GetItemById(id);
-        //    return SerializeResult<Item, ItemViewModel>(item);
-        //}
-
-
-        //private ActionResult SerializeResult<DataT,ViewModelT>(object resultObj)
-        //{
-        //    DataT result = (DataT)resultObj;
-        //    ViewModelT viewModel = (ViewModelT)Activator.CreateInstance(typeof(ViewModelT), new Object[] { result });
-        //    return result != null ? Json(viewModel, JsonRequestBehavior.AllowGet) : Json(new Object(), JsonRequestBehavior.AllowGet);
-        //}
 
         // POST api/test/submit
         [System.Web.Mvc.HttpPost]
@@ -68,109 +46,124 @@ namespace TSS.MVC.Areas.Api.Controllers
             var apiResult = new TestSubmitApiResultModel();
             if (Request.Files.Count > 0)
             {
-                foreach (string fileName in Request.Files)
+                try
                 {
-                    var fileResult = new TestSubmitApiResultFileModel();
-                    fileResult.Success = false;
 
-                    HttpPostedFileBase file = Request.Files[fileName];
-                    if (file != null && file.ContentLength > 0)
+                    foreach (string fileName in Request.Files)
                     {
-                        fileResult.FileName = file.FileName;
-                        var binReader = new BinaryReader(file.InputStream);
-                        var binData = binReader.ReadBytes((int) file.InputStream.Length);
-                        var memoryStream = new MemoryStream(binData);
-                        var streamReader = new StreamReader(memoryStream);
+                        var fileResult = new TestSubmitApiResultFileModel();
+                        fileResult.Success = false;
 
-
-                        ////validate xml file
-                        XmlDocument doc = new XmlDocument();
-                        doc.Load(streamReader);
-
-                        //log all xml requests to database if the site is running under debug mode.
-                        if (HttpContext.IsDebuggingEnabled)
-                            _loggerService.SaveLog(new Log
-                            {
-                                Category = LogCategory.Application,
-                                Level = LogLevel.Warning,
-                                Message = string.Format("/api/test/submit"),
-                                Details = file.FileName + ":" + doc.OuterXml
-                            });
-
-                        string xsdPath = Server.MapPath("~/App_Data/reportxml_os.xsd");
-                        string errorString = Helpers.SchemaHelper.Validate(xsdPath, doc);
-                        string valdiationOutput = string.IsNullOrEmpty(errorString)
-                                                      ? String.Empty
-                                                      : " File is not in a correct format. Validation Error:" +
-                                                        errorString;
-
-                        if (string.IsNullOrEmpty(errorString))
+                        HttpPostedFileBase file = Request.Files[fileName];
+                        if (file != null && file.ContentLength > 0)
                         {
-                            var serializer = new XmlSerializer(typeof (ItemScoreRequest));
-                            try
+                            fileResult.FileName = file.FileName;
+                            var binReader = new BinaryReader(file.InputStream);
+                            var binData = binReader.ReadBytes((int) file.InputStream.Length);
+                            var memoryStream = new MemoryStream(binData);
+                            var streamReader = new StreamReader(memoryStream);
+
+
+                            ////validate xml file
+                            XmlDocument doc = new XmlDocument();
+                            doc.Load(streamReader);
+
+                            //log all xml requests to database if the site is running under debug mode.
+                            if (HttpContext.IsDebuggingEnabled)
+                                LoggerRepository.SaveLog(new Log
+                                                             {
+                                                                 Category = LogCategory.Application,
+                                                                 Level = LogLevel.Warning,
+                                                                 Message = string.Format("/api/test/submit"),
+                                                                 Details = file.FileName + ":" + doc.OuterXml
+                                                             });
+
+                            string xsdPath = Server.MapPath("~/App_Data/reportxml_os.xsd");
+                            string errorString = Helpers.SchemaHelper.Validate(xsdPath, doc);
+                            string valdiationOutput = string.IsNullOrEmpty(errorString)
+                                                          ? String.Empty
+                                                          : " File is not in a correct format. Validation Error:" +
+                                                            errorString;
+
+                            if (string.IsNullOrEmpty(errorString))
                             {
-                                memoryStream.Position = 0;
-                                streamReader.DiscardBufferedData();
-                                var itemScoreRequest = (ItemScoreRequest) serializer.Deserialize(streamReader);
-                                streamReader.Close();
-                                memoryStream.Close();
-                                binReader.Close();
+                                var serializer = new XmlSerializer(typeof (ItemScoreRequest));
+                                try
+                                {
+                                    memoryStream.Position = 0;
+                                    streamReader.DiscardBufferedData();
+                                    var itemScoreRequest = (ItemScoreRequest) serializer.Deserialize(streamReader);
+                                    streamReader.Close();
+                                    memoryStream.Close();
+                                    binReader.Close();
 
-                                ProcessScoreRequest(itemScoreRequest);
+                                    ProcessScoreRequest(itemScoreRequest);
 
-                                fileResult.Success = true;
+                                    fileResult.Success = true;
+                                }
+                                catch (Exception ex)
+                                {
+                                    fileResult.ErrorMessage = "There was an error processing the file. " + ex.Message +
+                                                              ex.StackTrace;
+
+                                    LoggerRepository.SaveLog(new Log
+                                                                 {
+                                                                     Category = LogCategory.Application,
+                                                                     Level = LogLevel.Error,
+                                                                     Message = string.Format("/api/test/submit"),
+                                                                     Details = fileResult.ErrorMessage
+                                                                 });
+                                }
                             }
-                            catch (Exception ex)
+                            else
                             {
-                                fileResult.ErrorMessage = "There was an error processing the file. " + ex.Message +
-                                                          ex.StackTrace;
-
-                                _loggerService.SaveLog(new Log
-                                    {
-                                        Category = LogCategory.Application,
-                                        Level = LogLevel.Error,
-                                        Message = string.Format("/api/test/submit"),
-                                        Details = fileResult.ErrorMessage
-                                    });
+                                // if validation fails, then log the validation error and proceed with next request
+                                fileResult.ErrorMessage = valdiationOutput;
+                                LoggerRepository.SaveLog(new Log
+                                                             {
+                                                                 Category = LogCategory.Application,
+                                                                 Level = LogLevel.Error,
+                                                                 Message = string.Format("/api/test/submit"),
+                                                                 Details = fileResult.ErrorMessage
+                                                             });
                             }
                         }
                         else
                         {
-                            // if validation fails, then log the validation error and proceed with next request
-                            fileResult.ErrorMessage = valdiationOutput;
-                            _loggerService.SaveLog(new Log
-                            {
-                                Category = LogCategory.Application,
-                                Level = LogLevel.Error,
-                                Message = string.Format("/api/test/submit"),
-                                Details = fileResult.ErrorMessage
-                            });
+                            fileResult.ErrorMessage = "Error Code: 1002 Message: File does not contain any data.";
                         }
+                        apiResult.Files.Add(fileResult);
                     }
-                    else
-                    {
-                        fileResult.ErrorMessage = "Error Code: 1002 Message: File does not contain any data.";
-                    }
-                    apiResult.Files.Add(fileResult);
+                }
+                catch (Exception exp)
+                {
+                    LoggerRepository.LogException(exp);
                 }
             }
             return Json(apiResult);
         }
 
+
+        private TestImportRepository _testRepository;
+
         private void ProcessScoreRequest(ItemScoreRequest itemScoreRequest)
         {
             var tdsReport = itemScoreRequest.TDSReport;
+            var district = _testImportService.PopulateDistrictFromTdsReport(tdsReport);
+            _testRepository = new TSS.Data.TestImportRepository();
+
+
             //test info
             var test = _testImportService.PopulateTestFromTdsReport(tdsReport);
-            _testImportService.SaveTest(test);
+            _testRepository.SaveTest(test, district.DistrictID);
             //_testService.SaveTest(test);
             var teacher = _testImportService.PopulateTeacherFromTdsReport(tdsReport);
             //_teacherService.SaveTeacher(teacher);
-            _testImportService.SaveTeacher(teacher);
+            _testRepository.SaveTeacher(teacher, district.DistrictID);
             var student = _testImportService.PopulateStudentFromTdsReport(tdsReport);
             //_studentService.SaveStudent(student);
-            _testImportService.SaveStudent(student);
-            var district = _testImportService.PopulateDistrictFromTdsReport(tdsReport);
+            _testRepository.SaveStudent(student, district.DistrictID);
+
             var school = _testImportService.PopulateSchoolFromTdsReport(tdsReport);
             school.DistrictID = district.DistrictID;
             StringBuilder xmlInputs = new StringBuilder();
@@ -184,12 +177,12 @@ namespace TSS.MVC.Areas.Api.Controllers
             xmlInputs.Append(" SchoolName=\"" + school.SchoolName + "\"");
             xmlInputs.Append(" StateName=\"" + school.StateName + "\"");
             xmlInputs.Append(@"/></Root>");
-            _testImportService.SaveDistrictAndSchool(xmlInputs.ToString());
+            _testRepository.SaveDistrictAndSchool(xmlInputs.ToString(), district.DistrictID);
 
             // returns all items from tdsReport that have status NOT SCORED and that have a matching item type in the system
             xmlInputs.Clear();
             xmlInputs.Append(@"<Root>");
-            xmlInputs.Append(@"<Assignment"); 
+            xmlInputs.Append(@"<Assignment");
             xmlInputs.Append(" TestId=\"" + test.TestId + "\"");
             xmlInputs.Append(" TeacherId=\"" + teacher.TeacherID + "\"");
             xmlInputs.Append(" StudentId=\"" + student.StudentId + "\"");
@@ -203,7 +196,7 @@ namespace TSS.MVC.Areas.Api.Controllers
             var responses = _testImportService.PopulateItemsFromTdsReport(tdsReport);
             foreach (var response in responses)
             {
-                xmlInputs.Append(@"<Item"); 
+                xmlInputs.Append(@"<Item");
                 xmlInputs.Append(" ItemKey=\"" + response.ItemKey + "\"");
                 xmlInputs.Append(" BankKey=\"" + response.BankKey + "\"");
                 xmlInputs.Append(" ContentLevel=\"" + response.ContentLevel + "\"");
@@ -218,9 +211,14 @@ namespace TSS.MVC.Areas.Api.Controllers
                 xmlInputs.Append(@"</Item>");
             }
             xmlInputs.Append(@"</ItemList></Root>");
-            _testImportService.BatchProcessAssingmentAndResponse(xmlInputs.ToString());
+            _testRepository.BatchProcessAssingmentAndResponse(xmlInputs.ToString(), district.DistrictID);
         }
 
-        
+        // api/test/successresponse - xml
+        //[System.Web.Mvc.HttpPost]
+        public ActionResult SuccessResponse(string xml)
+        {
+            return Json("OK", JsonRequestBehavior.AllowGet);
+        }
     }
 }

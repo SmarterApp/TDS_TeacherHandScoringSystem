@@ -14,6 +14,5 @@ namespace TSS.Data
 {
     public interface ILoggerRepository
     {
-        void SaveLog(Log log);
     }
 }

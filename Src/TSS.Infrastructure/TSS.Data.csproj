@@ -85,22 +85,21 @@
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\Common\AssemblyVersion.cs">
-      <Link>Properties\AssemblyVersion.cs</Link>
-    </Compile>
-    <Compile Include="..\..\Common\CommonAssemblyInfo.cs">
-      <Link>Properties\CommonAssemblyInfo.cs</Link>
-    </Compile>
     <Compile Include="BaseApi.cs" />
-    <Compile Include="Sql\BaseRepository.cs" />
+    <Compile Include="DataDistribution\Configuration\DataDistributionConfig.cs" />
+    <Compile Include="DataDistribution\DataConnections.cs" />
+    <Compile Include="DataDistribution\ISessionConnector.cs" />
+    <Compile Include="DataDistribution\SessionConnector.cs" />
     <Compile Include="IItemConfigRepository.cs" />
     <Compile Include="ILoggerRepository.cs" />
     <Compile Include="IStudentResponseRepository.cs" />
     <Compile Include="ItemConfigRepository.cs" />
     <Compile Include="ITestImportRepository.cs" />
     <Compile Include="LoggerRepository.cs" />
+    <Compile Include="Sql\BaseRepository.cs" />
     <Compile Include="Sql\ColumnReader.cs" />
     <Compile Include="Sql\IColumnReader.cs" />
     <Compile Include="StudentResponseRepository.cs" />
@@ -132,7 +131,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="Diagram.cd" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\TSS.Domain\TSS.Domain.csproj">

@@ -15,6 +15,7 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using System.Web.Mvc;
+using TSS.Data;
 using TSS.Domain;
 using TSS.MVC.Areas.Api.Models;
 using TSS.Services;
@@ -38,7 +39,7 @@ namespace TSS.MVC.Areas.Api.Controllers
         //    var result = _teacherService.GetTeachersFromApi(pageNo, pageSize, role, entityId, level, state);
         //    return Json(result, JsonRequestBehavior.AllowGet);
         //}
-        
+
         public ActionResult GetScorersforReAssign()
         {
             try
@@ -49,11 +50,18 @@ namespace TSS.MVC.Areas.Api.Controllers
                 List<TenancyChain> t = UserAttributes.SAML.TenancyChainList;
                 //GET ALL SCORERS MATCHING ALL THE USER'S TENANCIES WHERE THE ROLES ARE OF TSS SCORER ROLES
                 var r = _teacherService.GetListOfPossibleScorers(t, roles);
+
+                if (r != null)
+                {
+                    r = r.OrderBy(e => e.firstName).ToList();
+                }
+
                 return Json(r, JsonRequestBehavior.AllowGet);
             }
             catch (Exception exc)
             {
-                return Json(new { success = false, data = string.Format("\"Error Code\": \"{0}\"  \"Message\":\"{1}\"", 4004, exc.Message) }, JsonRequestBehavior.AllowGet);
+                LoggerRepository.LogException(exc);
+                return Json(new { success = false, data = string.Format("\"Error Code\": \"{0}\"  \"Message\":\"{1}\"", 4004, exc.ToString()) }, JsonRequestBehavior.AllowGet);
             }
         }
 
@@ -76,10 +84,10 @@ namespace TSS.MVC.Areas.Api.Controllers
         //        return Json(new { success = false, data = string.Format("\"Error Code\": \"{0}\"  \"Message\":\"{1}\"", 4003, exc.Message) }, JsonRequestBehavior.AllowGet);
         //    }
         //}
-        
 
 
-        
+
+
 
     }
 }

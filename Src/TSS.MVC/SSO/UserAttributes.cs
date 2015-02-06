@@ -29,6 +29,11 @@ namespace TSS.MVC
         public const string AuthKey = "B262ACF431AD96F4";
         public const string SecMess = "";
 
+        public static bool UseEmailAsUuid
+        {
+            get { return (bool.Parse(ConfigurationManager.AppSettings["EMAIL_AS_UUID"])); }
+        }
+
         public static List<string> TeacherUUIDListCache
         {
             get
@@ -38,11 +43,10 @@ namespace TSS.MVC
                     List<RoleSet> roles = UserAttributes.SAML.GetListOfRolesThatCanViewItems();
                     List<TenancyChain> t = UserAttributes.SAML.TenancyChainList.Where(x => UserAttributes.CanRoleViewAll(x)).ToList<TenancyChain>();
                     TeacherService _teacherService = new TeacherService(new UserManagementApi());
-                    bool useEmailAsUUID = (bool.Parse(ConfigurationManager.AppSettings["EMAIL_AS_UUID"]));
                     var r = _teacherService.GetListOfPossibleScorers(t, roles);
                     //ADD USER TO MAKE SURE THEY ARE IN THE MIX
                     r.Add(new SearchResults() { username = UserAttributes.SAML.TSSUserID , email = UserAttributes.SAML.Mail, firstName = UserAttributes.SAML.FirstName, lastName = UserAttributes.SAML.LastName});
-                    HttpContext.Current.Session["TeacherUUIDListCache"] = useEmailAsUUID ?
+                    HttpContext.Current.Session["TeacherUUIDListCache"] = UseEmailAsUuid ?
                     (r.Select(result => result.email).ToList()) :
                     (r.Select(result => result.username).ToList());
                 }
@@ -60,14 +64,16 @@ namespace TSS.MVC
 
             }
         }
+        /// <summary>
+        /// current user's unique identifier(loaded from SAML response), which should match assignment's teacherid
+        /// </summary>
         public string TSSUserID
         {
             get {
-                bool useEmailAsUUID = (bool.Parse(ConfigurationManager.AppSettings["EMAIL_AS_UUID"]));
-                if (useEmailAsUUID)//RETURN UUID
-                    return this.sbacUUID;
-                else //RETURN MAIL
+                if (UseEmailAsUuid) //RETURN MAIL
                     return this.Mail;
+                else //RETURN UUID
+                    return this.sbacUUID;
             }
         
         }
@@ -117,6 +123,23 @@ namespace TSS.MVC
         public string SignatureReferenceDigestValue { get; set; }
         public DateTime AutheticationTime { get; set; }
         public string AuthenticationSession { get; set; }
+        public const string ACTIVE_DISTRICT = "ACTIVE_DISTRICT";
+        public string ActiveDistrictId
+        {
+            get
+            {
+                //IF NO COOKIE SET RETURN FIRST TENANCY
+                if (HttpContext.Current.Request.Cookies.Get(ACTIVE_DISTRICT) == null)
+                    HttpContext.Current.Response.Cookies.Set(new HttpCookie(ACTIVE_DISTRICT, UserAttributes.SAML.TenancyChainList[0].DistrictID));
+
+                return HttpContext.Current.Request.Cookies.Get(ACTIVE_DISTRICT).Value; 
+                
+            }
+            set
+            {
+                HttpContext.Current.Response.Cookies.Set(new HttpCookie(ACTIVE_DISTRICT, value));
+            }
+        }
         public List<TenancyChain> TenancyChainList
         {
             get

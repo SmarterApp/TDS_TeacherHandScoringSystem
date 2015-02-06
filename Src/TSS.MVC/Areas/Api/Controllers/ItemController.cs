@@ -15,23 +15,24 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using Newtonsoft.Json;
+using TSS.Data;
 using TSS.Domain;
 using TSS.Domain.DataModel;
 using TSS.MVC.Areas.Api.Models;
 using TSS.Services;
+using TSS.Data.DataDistribution;
 
 namespace TSS.MVC.Areas.Api.Controllers
 {
     public class ItemController : Controller
     {
+        private readonly ITeacherService _teacherService;
         private readonly IStudentResponseService _studentResponseService;
-
         
         public ItemController(IStudentResponseService studentResponseService)
         {
             _studentResponseService = studentResponseService;
-        }
-       
+        }       
 
         // GET api/item/get/id
         [System.Web.Mvc.HttpGet]
@@ -39,17 +40,22 @@ namespace TSS.MVC.Areas.Api.Controllers
         {
             var apiResult = new ItemGetApiResultModel();
             apiResult.Success = false;
-
-            if (assignmentId != null)
+            try
             {
-                var assignment = _studentResponseService.GetAssignmentById((Guid)assignmentId);
-                if (assignment != null)
+                if (assignmentId != null)
                 {
-                    apiResult.Success = true;
-                    apiResult.Assignment = assignment;
+                    var assignment = _studentResponseService.GetAssignmentById((Guid) assignmentId);
+                    if (assignment != null)
+                    {
+                        apiResult.Success = true;
+                        apiResult.Assignment = assignment;
+                    }
                 }
             }
-
+            catch (Exception exp)
+            {
+                LoggerRepository.LogException(exp);
+            }
             return Json(apiResult, JsonRequestBehavior.AllowGet);
         }
 
@@ -76,41 +82,60 @@ namespace TSS.MVC.Areas.Api.Controllers
         [System.Web.Mvc.HttpPost]
         public ActionResult List(AssignedItemsQuery query)
         {
-            List<ItemType> itemTypes = ItemConfigSingleton.Instance.LoadItemTypes();
-            query.UserUUID =  UserAttributes.SAML.TSSUserID;
-            query.teacherUUIDs = UserAttributes.TeacherUUIDListCache;
-            var assignmentPage = _studentResponseService.GetAssignmentsByAssignedToTeacherIDList(query);
-            var assignmentList = assignmentPage.Assignments.ToList();
-            var apiResult = new StudentItemsApiResultModel(assignmentPage);
-            apiResult.RefreshFilters = RefreshFilter(query.filters);
-            foreach (var assignment in assignmentList)
+            try
             {
-                var itm = new StudentItem
+                query.UserUUID = UserAttributes.SAML.TSSUserID;
+                query.teacherUUIDs = UserAttributes.TeacherUUIDListCache;
+                var assignmentPage = _studentResponseService.GetAssignmentsByAssignedToTeacherIDList(query);
+                var assignmentList = assignmentPage.Assignments.ToList();
+                var apiResult = new StudentItemsApiResultModel(assignmentPage);
+                apiResult.RefreshFilters = RefreshFilter(query.filters);
+                foreach (var assignment in assignmentList)
                 {
-                    AssignedTo = assignment.AssignedTeacherName,
-                    AssignmentID = assignment.AssignmentId,
-                    Item = assignment.ItemKey + ": " +  assignment.ItemTypeDescription,
-                    ItemKey = assignment.ItemKey,
-                    Session = assignment.SessionId,
-                    Status = (assignment.ScoreStatus == StudentResponseAssignment.ScoreStatusCode.NotScored ? "Not Scored" : assignment.ScoreStatus == StudentResponseAssignment.ScoreStatusCode.TentativeScore ? "Tentatively Scored" : "Scored"),
-                    StatusId = assignment.ScoreStatus.ToString(),
-                    StudentName = assignment.StudentName,
-                    CanScore = (String.Equals(assignment.TeacherId.Trim(), UserAttributes.SAML.sbacUUID.Trim(), StringComparison.CurrentCultureIgnoreCase))
-                };
+                    var itm = new StudentItem
+                                  {
+                                      AssignedTo = assignment.AssignedTeacherName,
+                                      AssignmentID = assignment.AssignmentId,
+                                      Item = assignment.ItemKey + ": " + assignment.ItemTypeDescription,
+                                      ItemKey = assignment.ItemKey,
+                                      Session = assignment.SessionId.ToLower(),
+                                      Status =
+                                          (assignment.ScoreStatus == StudentResponseAssignment.ScoreStatusCode.NotScored
+                                               ? "Not Scored"
+                                               : assignment.ScoreStatus ==
+                                                 StudentResponseAssignment.ScoreStatusCode.TentativeScore
+                                                     ? "Tentatively Scored"
+                                                     : "Scored"),
+                                      StatusId = assignment.ScoreStatus.ToString(),
+                                      StudentName = assignment.StudentName,
+                                      CanScore =
+                                          (String.Equals(assignment.TeacherId.Trim(),
+                                                         UserAttributes.SAML.TSSUserID.Trim(),
+                                                         StringComparison.CurrentCultureIgnoreCase))
+                                  };
 
-                apiResult.StudentItem.Add(itm);
+                    apiResult.StudentItem.Add(itm);
+                }
+                var jsonResult = Json(apiResult, JsonRequestBehavior.AllowGet);
+                jsonResult.MaxJsonLength = int.MaxValue;
+                return jsonResult;
             }
+            catch (Exception exp)
+            {
+                LoggerRepository.LogException(exp);
 
-
-           var jsonResult =  Json(apiResult, JsonRequestBehavior.AllowGet);
-           jsonResult.MaxJsonLength = int.MaxValue;
-            return jsonResult;
+                // what to return?
+                var jsonResult = Json(new StudentItemsApiResultModel(new AssignmentPage()), JsonRequestBehavior.AllowGet);
+                jsonResult.MaxJsonLength = int.MaxValue;
+                return jsonResult;
+            }
         }
 
         // TODO: POST api/item/submit  add a configurationRepository
         [System.Web.Mvc.HttpPost]
         public ActionResult Submit()
         {
+
             var apiResult = new TestSubmitApiResultModel();
             if (Request.Files.Count > 0)
             {
@@ -169,12 +194,14 @@ namespace TSS.MVC.Areas.Api.Controllers
                                 itemType.Subject = obj.subject;
                                 itemType.Grade = obj.grade;
                                 itemType.ExemplarURL = isRelativeURI ? new Uri(baseUri + obj.exemplar, UriKind.Relative).ToString() : new Uri(baseUri, obj.exemplar).AbsoluteUri;
-                                itemType.TrainingGuideURL = isRelativeURI ? new Uri(baseUri+ obj.trainingGuide, UriKind.Relative).ToString() : new Uri(baseUri, obj.trainingGuide).AbsoluteUri;
+                                itemType.TrainingGuideURL = isRelativeURI ? new Uri(baseUri + obj.trainingGuide, UriKind.Relative).ToString() : new Uri(baseUri, obj.trainingGuide).AbsoluteUri;
                                 itemType.RubricListXML = obj.rubricList;
                                 itemType.Layout = obj.Layout;
 
                                 itemType.Modified = true;
 
+  
+                                itemType.Dimensions.Clear();
                                 foreach (var dimension in obj.dimensions)
                                 {
                                     var d = new Dimension();
@@ -186,7 +213,7 @@ namespace TSS.MVC.Areas.Api.Controllers
                                     d.Name = dimension.description;
                                     d.Min = dimension.minpoints;
                                     d.Max = dimension.maxpoints;
-
+                                    
                                     foreach (var cc in dimension.conditions)
                                     {
                                         var c = new ConditionCode
@@ -198,8 +225,7 @@ namespace TSS.MVC.Areas.Api.Controllers
 
                                         d.ConditionCodes.Add(c);
                                     }
-
-                                    itemType.Dimensions.Add(d);
+                                    itemType.Dimensions.Add(d); 
                                 }
 
                                 //_itemTypeService.Save(itemType);
@@ -208,6 +234,7 @@ namespace TSS.MVC.Areas.Api.Controllers
                         catch (Exception ex)
                         {
                             fileResult.ErrorMessage = ex.Message;
+                            LoggerRepository.LogException(ex);
                         }
 
                         fileResult.Success = true;
@@ -220,8 +247,14 @@ namespace TSS.MVC.Areas.Api.Controllers
                     apiResult.Files.Add(fileResult);
                 }
             }
-
-            ItemConfigSingleton.Instance.UpdateItemTypes();
+            try
+            {
+                ItemConfigSingleton.Instance.UpdateItemTypes();
+            }
+            catch (Exception exp)
+            {
+                LoggerRepository.LogException(exp);
+            }
             return Json(apiResult);
         }
     }

@@ -11,29 +11,55 @@
 using System;
 using System.Data;
 using System.Data.SqlClient;
+using System.Threading;
+using System.Web;
 using TSS.Data.Sql;
 using TSS.Domain.DataModel;
+using TSS.Data.DataDistribution;
 
 namespace TSS.Data
 {
     public class LoggerRepository: BaseRepository,ILoggerRepository
     {
-        public static LoggerRepository Instance = null;
+		private static LoggerRepository _instance = null;
+        private static readonly Object locker = new Object();
+
+        private static LoggerRepository Instance
+        {
+            get
+            {
+                Object rv=null;
+                Interlocked.Exchange(ref rv, _instance);
+                if (rv == null)
+                {
+                    lock (locker)
+                    {
+                        if (_instance != null)
+                        {
+                            return _instance;
+                        }
+                        _instance = new LoggerRepository();
+                        rv = _instance;
+                    }
+                }
+                return rv as LoggerRepository;
+            }
+        }
 
         public LoggerRepository()
         {
-            Instance = this;
         }
-        public void SaveLog(Log log)
+
+        public static void SaveLog(Log log)
         {
-            SqlCommand command = CreateCommand(CommandType.StoredProcedure, "dbo.sp_SaveLog");
+            SqlCommand command = Instance.CreateCommand(CommandType.StoredProcedure, "dbo.sp_SaveLog");
             command.AddValue("Category", log.Category);
             command.AddValue("Details", log.Details);
             command.AddValue("IpAddress", log.IpAddress);
             command.AddValue("Level", log.Level);
             command.AddValue("LogDate", log.LogDate);
             command.AddValue("Message", log.Message);
-            ExecuteNonQuery(command);
+            Instance.ExecuteNonQuery(command);
         }
 
         /// <summary>
@@ -44,7 +70,7 @@ namespace TSS.Data
         /// <param name="message"></param>
         /// <param name="ip"></param>
         /// <param name="includeStackTrace"></param>
-        public void LogException(Exception exp, string details = null, string message = null, string ip = null,bool includeStackTrace = true)
+        public static void LogException(Exception exp, string details = null, string message = null, string ip = null,bool includeStackTrace = true)
         {
             if (string.IsNullOrEmpty(message))
             {
