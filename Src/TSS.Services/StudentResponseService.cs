@@ -56,6 +56,10 @@ namespace TSS.Services
             return _studentResponseRepository.GetAssignmentById(assignmentId);
         }
 
+        public AssignmentPage GetSortedAssignmentIds(AssignedItemsQuery query)
+        {
+            return _studentResponseRepository.GetSortedAssignmentIds(query);
+        }
         public AssignmentPage GetAssignmentsByAssignedToTeacherIDList(AssignedItemsQuery query)
         {
             return _studentResponseRepository.GetAssignmentsByAssignedToTeacherIDList(query);

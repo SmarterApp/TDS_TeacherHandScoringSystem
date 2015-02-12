@@ -125,7 +125,10 @@ namespace TSS.Data
                     xmlSerializer.Serialize(xmlWriter, aList);
                     string xmlString = encoding.GetString(ms.ToArray());
                     // District code is back in.
-                    IEnumerable<string> districts = DataConnections.DistrictLookUp.Keys;
+                    List<string> districts = DataConnections.DistrictLookUp.Keys.ToList();
+                    // If the default is not associated with a district, put a dummy
+                    // value in that defaults to the default.
+                    districts.Add("Default");
                     List<string> dbSent = new List<string>();
                     foreach (string district in districts)
                     {

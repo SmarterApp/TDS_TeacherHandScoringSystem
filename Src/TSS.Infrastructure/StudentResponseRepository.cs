@@ -224,6 +224,70 @@ namespace TSS.Data
             return assignment;
         }
 
+        /// <summary>
+        /// Get full list of assignment ids for the current user, sorted by parameters
+        /// </summary>
+        /// <param name="query"></param>
+        /// <returns></returns>
+        public AssignmentPage GetSortedAssignmentIds(AssignedItemsQuery query)
+        {
+            string sortColumn = "";
+            switch (query.sortColumn)
+            {
+                case "Name":
+                    sortColumn = "StudentName";
+                    break;
+                case "Item":
+                    sortColumn = "ItemKey";
+                    break;
+                case "Session":
+                    sortColumn = "SessionId";
+                    break;
+                case "Status":
+                    sortColumn = "ScoreStatus";
+                    break;
+                case "AssignedTo":
+                    sortColumn = "AssignedTo";
+                    break;
+            }
+
+            // Test filter needs some finessing due to name/value pair
+            string testFilter = query.filters.Where(x => x.Key == "test-Name").Select(x => x.Value).FirstOrDefault();
+
+            List<String> assignments = new List<String>();
+
+            SqlCommand command = CreateCommand(CommandType.StoredProcedure, "[dbo].[sp_GetSortedAssignmentIds]");
+            command.AddValue("SortColumn", sortColumn);
+            command.AddValue("SortDirection", query.sortDirection);
+            command.AddValue("TeacherId", query.UserUUID);
+            command.AddValue("TestFilter", testFilter);
+            command.AddValue("SessionFilter",
+                             query.filters.Where(x => x.Key.Contains("a-SessionId")).Select(x => x.Value).FirstOrDefault
+                                 ());
+            command.AddValue("GradeFilter",
+                             query.filters.Where(x => x.Key.Contains("test-Grade")).Select(x => x.Value).FirstOrDefault());
+            command.AddValue("SubjectFilter",
+                             query.filters.Where(x => x.Key.Contains("test-Subject")).Select(x => x.Value).
+                                 FirstOrDefault());
+
+            LogParameters(command);
+            ExecuteReader(command, delegate(IColumnReader reader)
+            {
+                reader.FixNulls = true;
+                while (reader.Read())
+                {
+                    Guid guid = reader.GetGuid("AssignmentId");
+                    assignments.Add(guid.ToString());
+                }
+            });
+     
+            var page = new AssignmentPage();
+
+            // Create pipe-delimited list for the json object
+            page.AllAssignmentIds = string.Join("|", assignments);
+            return page;
+        }
+
         public AssignmentPage GetAssignmentsByAssignedToTeacherIDList(AssignedItemsQuery query)
         {
             string sortColumn = "";
@@ -246,17 +310,19 @@ namespace TSS.Data
                     break;
             }
 
-            string xxx = query.filters.Where(x => x.Key == "test-Name").Select(x => x.Value).FirstOrDefault();
-            var pagedListResults = GetPageListResults(query, sortColumn, xxx);
-            var rowCount = GetRowCount(query, xxx);
+            string testFilter = query.filters.Where(x => x.Key == "test-Name").Select(x => x.Value).FirstOrDefault();
+            var pagedListResults = GetPageListResults(query, sortColumn, testFilter);
+            var rowCount = GetRowCount(query, testFilter);
             var filterItems = GetFilterResults(query);
-            var assignedItems = GetAssignedItems(query, xxx);
+
+            // var assignedItems = GetSortedAssignments(query, sortColumn, rowCount, xxx);
 
             var page = new AssignmentPage();
             //SET ROW COUNT
             page.rowcount = rowCount;//PagedListResults.Count();
-            //LIST OF ASSIGNMENT IDS
-            page.AllAssignmentIds = string.Join("|", assignedItems);
+            
+            // LIST OF ASSIGNMENT IDS
+            page.AllAssignmentIds = "";  // this is now filled in elsewhere
 
             page.FilterItems = filterItems;
 
@@ -267,12 +333,12 @@ namespace TSS.Data
         }
 
         #region Private helper
-        private IEnumerable<Guid> GetAssignedItems(AssignedItemsQuery query, string xxx)
+        private IEnumerable<Guid> GetAssignedItems(AssignedItemsQuery query,string testFilter)
         {
             List<Guid> assignedResponseIDs = new List<Guid>();
             SqlCommand command = CreateCommand(CommandType.StoredProcedure, "[dbo].[sp_GetAssignedItems]");
             command.AddValue("TeacherId", query.UserUUID);
-            command.AddValue("TestFilter", xxx);
+            command.AddValue("TestFilter", testFilter);
             command.AddValue("SessionFilter",query.filters.Where(x => x.Key.Contains("a-SessionId")).Select(x => x.Value).FirstOrDefault());
             command.AddValue("GradeFilter", query.filters.Where(x => x.Key.Contains("test-Grade")).Select(x => x.Value).FirstOrDefault());
             command.AddValue("SubjectFilter", query.filters.Where(x => x.Key.Contains("test-Subject")).Select(x => x.Value).
@@ -359,7 +425,39 @@ namespace TSS.Data
             return rowCount;
         }
 
-        private List<AssignmentResult> GetPageListResults(AssignedItemsQuery query, string sortColumn, string xxx)
+        private List<String> GetSortedAssignmentIdsSql(AssignedItemsQuery query, string sortColumn, string testFilter)
+        {
+            List<String> assignments = new List<String>();
+
+            SqlCommand command = CreateCommand(CommandType.StoredProcedure, "[dbo].[sp_GetSortedAssignmentIds]");
+            command.AddValue("SortColumn", sortColumn);
+            command.AddValue("SortDirection", query.sortDirection);
+            command.AddValue("TeacherId", query.UserUUID);
+            command.AddValue("TestFilter", testFilter);
+            command.AddValue("SessionFilter",
+                             query.filters.Where(x => x.Key.Contains("a-SessionId")).Select(x => x.Value).FirstOrDefault
+                                 ());
+            command.AddValue("GradeFilter",
+                             query.filters.Where(x => x.Key.Contains("test-Grade")).Select(x => x.Value).FirstOrDefault());
+            command.AddValue("SubjectFilter",
+                             query.filters.Where(x => x.Key.Contains("test-Subject")).Select(x => x.Value).
+                                 FirstOrDefault());
+
+            LogParameters(command);
+            ExecuteReader(command, delegate(IColumnReader reader)
+            {
+                reader.FixNulls = true;
+                while (reader.Read())
+                {
+                    Guid guid = reader.GetGuid("AssignmentId");
+                    assignments.Add(guid.ToString());
+                }
+            });
+     
+            return assignments;
+        }
+
+        private List<AssignmentResult> GetPageListResults(AssignedItemsQuery query, string sortColumn,string testFilter)
         {
             List<AssignmentResult> pagedListResults = new List<AssignmentResult>();
            
@@ -372,7 +470,7 @@ namespace TSS.Data
                     command.AddValue("SortColumn", sortColumn);
             command.AddValue("SortDirection", query.sortDirection);
             command.AddValue("EmailList", string.Join("|", query.teacherUUIDs.Distinct().ToList()));
-            command.AddValue("TestFilter", xxx);
+            command.AddValue("TestFilter", testFilter);
             command.AddValue("SessionFilter",
                              query.filters.Where(x => x.Key.Contains("a-SessionId")).Select(x => x.Value).FirstOrDefault
                                  ());

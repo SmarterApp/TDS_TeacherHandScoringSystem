@@ -1,12 +1,84 @@
 ﻿
 
 
-//begin main function
-/* jQuery(document).ready(function () {
-	alert("Loading StudentItems.data-script.js...");
-	retrieveData();
-}); */
+
 //end main function
+var TSS = (typeof (TSS)) == 'undefined' ? {} : TSS;
+TSS.Common = (typeof (TSS.Common)) == 'undefined' ? {} : TSS.Common;
+
+TSS.Common.TSSQUERY = "TSS_QUERY";
+TSS.Common.ASSIGNMENTIDS = "TSS.Detail.AssignmentIds";
+TSS.Common.CURRENTID = "TSS_CURRENTID";
+
+TSS.Common.storage = $.localStorage;
+TSS.Common.getQuery = function () {
+    var storage = TSS.Common.storage;
+    if (!storage.get(TSS.Common.TSSQUERY)) {
+        storage.set(TSS.Common.TSSQUERY, new TSS.Common.tssQuery());
+    }
+    return storage.get(TSS.Common.TSSQUERY);
+};
+
+TSS.Common.saveAssignmentIds = function(ids) {
+    TSS.Common.storage.set(TSS.Common.ASSIGNMENTIDS, ids);
+};
+
+TSS.Common.getAssignmentIds = function () {
+    return TSS.Common.storage.get(TSS.Common.ASSIGNMENTIDS);
+};
+
+TSS.Common.clearStorage = function () {
+    TSS.Common.storage.removeAll();
+};
+
+TSS.Common.saveQueryValue = function (filterName, value, callback) {
+    var storage = TSS.Common.storage;
+    var q = getQuery();
+    for (var i = 0; i < q.columnFilterValues.length; i++) {
+        if (q.columnFilterValues[i].filterName === filterName) {
+            q.columnFilterValues[i].value = (value == "-1" ? "" : value);
+            break;
+        }
+    }
+    storage.set(TSS.Common.TSSQUERY, q);
+    callback();
+};
+
+TSS.Common.SaveQuery = function (query) {
+    TSS.Common.storage.set(TSS.Common.TSSQUERY, query);
+};
+
+TSS.Common.getCurrentAssignmentId = function() {
+    return TSS.Common.storage.get(TSS.Common.CURRENTID);
+};
+
+TSS.Common.setCurrentAssignmentId = function (id) {
+    return TSS.Common.storage.set(TSS.Common.CURRENTID,id);
+};
+
+TSS.Common.getAppliedFilters = function () {
+
+    var filters = TSS.Common.getQuery().columnFilterValues;
+    var returnObj = new Object();
+    for (var i = 0; i < filters.length; i++) {
+        returnObj[filters[i].filterName] = filters[i].value;
+    }
+
+    return returnObj;
+};
+
+TSS.Common.tssQuery = function () {
+    var that = this;
+    this.columnFilterValues = [];
+    var filterElements = $(".chosen-select");
+    filterElements.each(function () {
+        var filterName = $(this).data('filtername');
+        var id = this.id;
+        that.columnFilterValues.push({ id: id, filterName: filterName, value: "" });
+    });
+    this.sortColumn = "";
+    this.sortDirection = "";
+};
 
 // grab data
 function retrieveData(callback) {

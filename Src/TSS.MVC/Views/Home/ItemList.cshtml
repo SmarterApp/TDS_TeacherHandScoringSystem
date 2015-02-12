@@ -228,48 +228,25 @@
    
 
     BACKPUSHED = false;
-    //Filter Storage
-    var TSSQUERY = "TSS_QUERY";
-    var storage = $.localStorage;
+
     var getQuery = function () {
-        if (!storage.get(TSSQUERY)) {
-            storage.set(TSSQUERY, new tssQuery());
-        }
-        return storage.get(TSSQUERY);
+        return TSS.Common.getQuery();
     };
     var saveQueryValue = function (filterName, value, callback) {
-        var q = getQuery();
-        for (var i = 0; i < q.columnFilterValues.length; i++) {
-            if (q.columnFilterValues[i].filterName === filterName) {
-                q.columnFilterValues[i].value = (value == "-1" ? "" : value);
-                break;
-            }
-
-
-        }
-        storage.set(TSSQUERY, q);
-        callback();
+        return TSS.Common.saveQueryValue(filterName, value, callback);
     };
 
     var SaveQuery = function (query) {
-        storage.set(TSSQUERY, query);
+        return TSS.Common.SaveQuery(query);
     };
 
     var tssQuery = function () {
-        var that = this;
-        this.columnFilterValues = [];
-        var filterElements = $(".chosen-select");
-        filterElements.each(function () {
-            var filterName = $(this).data('filtername');
-            var id = this.id;
-            that.columnFilterValues.push({id:id, filterName: filterName, value: "" });
-        });
-        this.sortColumn = "";
-        this.sortDirection = "";
+        return TSS.Common.tssQuery();
     };
+
     var applyFilter = function () {
 
-        var q = this.getQuery();
+        var q = getQuery();
         var selectFilter = function (filter) {
             $("#" + filter.id).find('option').each(function () {
                 if ($(this).text() == filter.value) {
@@ -290,21 +267,14 @@
     };
 
     var hasRun = false;
-    var prepareIds = function (rowIds) {
-       // $.cookie("currentIds", rowIds);
-        storage.set("TSS_CURRENTIDS", rowIds);
-    };
+
     var drawTable = function () {
         var table = $('#studentList').DataTable({
-            //"serverSide": true,
-            //"scrollY": "600px",
             "scrollCollapse": true,
             "paging": true,
             "aaSorting":[],
-            //"ordering": true,
             "info": false,
-            "scrollX": false//,
-            //"aoColumnDefs": [{ 'bSortable': false, 'aTargets': [1, 7] }]
+            "scrollX": false
         });
         table.draw();
 
@@ -316,14 +286,7 @@
 
     };
     var GetAppliedFilters = function () {
-
-        var filters = getQuery().columnFilterValues;
-        var returnObj = new Object();
-        for (var i = 0; i < filters.length; i++) {
-            returnObj[filters[i].filterName] = filters[i].value;
-        }
-        
-        return returnObj;
+        return TSS.Common.getAppliedFilters();
     };
     var dataGetProcess = function (data, callback, settings) {
         var dataSource = '/api/item/list';
@@ -355,6 +318,8 @@
         var q = getQuery();
         q.sortColumn = postData.sortColumn;
         q.sortDirection = postData.sortDirection;
+        q.pageStart = data.start;
+        q.pageLength = data.length;
         SaveQuery(q);
 
         $('#datatable2_filter').hide();
@@ -367,7 +332,7 @@
                 populateFilterLists(rdata);
                 hasRun = true;
             }
-            prepareIds(rdata.IdList);
+            // prepareIds(rdata.IdList);
             wireDataTableEvents();
             applyFilter();
             $('#datatable2_filter').hide();
@@ -398,64 +363,57 @@
         }
 
     };
-    var getColumnSchema = function (isAdmin)
-    {
+    var getColumnSchema = function(isAdmin) {
 
-        
-
-        //if (isAdmin)
-        //{
-            return [
-                    { "data": "", "name": "Name", "orderable": false, "render": renderCheckBox },
-                    { "data": "StudentName", "name": "Item" },
-                    { "data": "Item", "name": "Session" },
-                    { "data": "Session", "name": "Status" },
-                    { "data": "Status", "name": "AssignedTo" },
-                    { "data": "AssignedTo", "name": "AssignedTo" },
-                    { "data": "", "name": "", "width": "100px", "orderable": false, "render": renderScoreButton }];
-        //}
-        //else
-        //{
-            //return [
-            //        { "data": "", "Name": "Name", "orderable": false, "render": renderCheckBox },
-            //        { "data": "StudentName", "name": "Name" },
-            //        { "data": "Item", "name": "Item" },
-            //        { "data": "Session", "name": "Session" },
-            //        { "data": "Status", "name": "Status" },
-            //        { "data": "AssignedTo", "name": "AssignedTo" },
-            //        { "data": "", "name": "", "orderable": false, "render": renderScoreButton }];
-        //}
-
-    }
+        return [
+            { "data": "", "name": "Name", "orderable": false, "render": renderCheckBox },
+            { "data": "StudentName", "name": "Item" },
+            { "data": "Item", "name": "Session" },
+            { "data": "Session", "name": "Status" },
+            { "data": "Status", "name": "AssignedTo" },
+            { "data": "AssignedTo", "name": "AssignedTo" },
+            { "data": "", "name": "", "width": "100px", "orderable": false, "render": renderScoreButton }];
+    };
+    
     var drawTable2 = function () {
         var isadmin = $("#adminCheckbox").prop('checked');
-        var table = $('#datatable2').DataTable({
-            //"scrollY": "600px",
+        
+        var tableParams = {
             "scrollCollapse": true,
             "serverSide": true,
             "processing": true,
             "paging": true,
             "info": true,
             "pagingType": "full_numbers",
-            "lengthMenu":[25],
+            "lengthMenu": [25],
             "ajax": dataGetProcess,
             "columns": getColumnSchema(isadmin),
             "columnDefs": [{
-                "targets": [0],
-                "orderable": false
-            }, {
-                "targets": [5],
-                "visible": isadmin,
-                "searchable": false
-            }, {
-                "targets": 6,
-                "searchable": false,
-                "width": "100px"
-            }]
-            
-        });
-        
-        
+                    "targets": [0],
+                    "orderable": false
+                }, {
+                    "targets": [5],
+                    "visible": isadmin,
+                    "searchable": false
+                }, {
+                    "targets": 6,
+                    "searchable": false,
+                    "width": "100px"
+                }]
+        };
+        var storedPage = -1;
+        if (window.location.href.indexOf("?loadfromstorage") > -1) {
+            var query = getQuery();
+            if (query && query.pageStart) {
+                tableParams.displayStart = query.pageStart;
+                tableParams.pageLength = query.pageLength;
+            }
+        }
+        window.listTable = $('#datatable2').DataTable(tableParams);
+        if (storedPage > 0) {
+            listTable.page(storedPage).draw(false);
+        }
+
         renderAdmin(isadmin);
        
     };
@@ -463,16 +421,10 @@
     $('.chosen-select').on('change', function (e) {
         var target = e.source || e.target;
         var fName = $(target).data('filtername');
-        var fText = $(target).find('option:selected').text();
         var fValue = $(target).find('option:selected').val();
         if (fValue === "-1")
             fValue = "";
-        //saveQueryValue(fName, fValue, function () {
         saveQueryValue(fName, fValue, ReLoadDataTable);
-        
-       
-            
-        //});
     });
 
     var renderCheckBox = function (u,i,data,info) {
@@ -481,7 +433,6 @@
     };
 
     var renderScoreButton = function (u, i, data, info) {
-
         if (!data.CanScore)
             return "";
 
@@ -495,7 +446,6 @@
             $("#assignedToHeader").show();
             $(".adminFilter").show();
             $("#districtControl").show();
-            //$("html").addClass("isAdmin"); //for th sizing purpose, may not need this when the grid is redone
         } else {
             //Turn on Filters
             $("#assignedToHeader").show();
@@ -517,7 +467,7 @@
     $(document).ready(function () {
 
         if (window.location.href.indexOf("?loadfromstorage") == -1)
-            storage.removeAll();
+            TSS.Common.clearStorage();
 
         //Drawa Data Table
         var RefreshDataTable = function() {
@@ -557,11 +507,6 @@
                
              }
         });
-        //close dialog
-        var CloseDialogBox = function (obj) {
-            $(obj).dialog("close");
-        };
-
 
         var reassignComplete = $("#reassign-complete").dialog({
             resizable: false,
@@ -595,7 +540,6 @@
                 "Reassign": function () {
 
                     var objects = $('#datatable2 tbody input[type=checkbox]:checked');
-                    var items = [];
                     var scorer = $("#PossibleScorers option:selected").val();
                     var name = $("#PossibleScorers option:selected").text();
 
@@ -611,10 +555,6 @@
                     $("#lblReassign").text("Are you sure you want Reassign " + objects.length + " Item(s) to " + name + " ?");
                     reassignComplete.dialog('open');
                     $(this).dialog("close");
-                    //if (ReassignItems()) {
-                    //    $(this).dialog("close");
-                    //}
-
                 },
                 Cancel: function () {
                     $(this).dialog("close");
@@ -622,6 +562,7 @@
             }
         });
 
+        // Populate the 'ReassignSelected' dialog box.
         var GetTeachers = function () {
             $.ajax({
                 url: '/api/Teacher/GetScorersforReAssign/',
@@ -631,23 +572,20 @@
                         var select = $("<option value='-1'>Select a Scorer</option>");
                         $("#PossibleScorers").append(select);
                         $.each(data, function () {
-                            var isadmin = "@Model.IsAdmin";
-                            var useEmailAsUuid = "@Model.UserEmailAsUuid";
+                            // Am I an admin, who can assign items to others, including myself?
+                            var isadmin = ("@Model.IsAdmin".toLowerCase() == "true");
+
+                            // User index is username (casbac) or email (everyone else)
+                            var user = ("@Model.UserEmailAsUuid".toLowerCase() == "true") ? this.email : this.username;
+                            
+                            // Avoid listing myself in the list if I am non-admin, as I am only seeing my own items to begin with.
+                            var isNotSelf = ("@Model.TSSUserID" != user);
+                            
                             var option;
-                            if (useEmailAsUuid) {
-                                //exclude the current user(if not administrator) from the dropdown scorers
-                                if (this.email != "@Model.TSSUserID" || isadmin == "True") {
-                                    option = $("<option value='" + this.email + "' title='" + this.email + "'>" + this.firstName + " " + this.lastName + "</option>");
-                                    $("#PossibleScorers").append(option);
-                                }
-                            }else {
-                                if (this.username != "@Model.TSSUserID" || isadmin == "True") {
-                                    option = $("<option value='" + this.username + "' title='" + this.username + "'>" + this.firstName + " " + this.lastName + "</option>");
-                                    $("#PossibleScorers").append(option);
-                                }
+                            if (isadmin || isNotSelf) {
+                                option = $("<option value='" + user + "' title='" + user + "'>" + this.firstName + " " + this.lastName + "</option>");
+                                $("#PossibleScorers").append(option);
                             }
-                            
-                            
                         });
                     }
                 },
@@ -655,8 +593,8 @@
                     console.log('GetTeachers() Error', data);
                 }
             });
-
         };
+        
         var ReassignItems = function() {
             var objects = $('#datatable2 tbody input[type=checkbox]:checked');
             var items = [];
@@ -670,10 +608,7 @@
                 }
             }
 
-
-
-
-            post = JSON.stringify({ ids: items, scorerUUID: scorer, name: name });
+            var post = JSON.stringify({ ids: items, scorerUUID: scorer, name: name });
 
             $.ajax({
                 url: '/Home/ReassignScorer',
@@ -703,7 +638,7 @@
                 return;
             }
 
-            
+
             for (var i = 0; i < objects.length; i++) {
 
                 if ($(objects[i]).data("status").toString().toUpperCase() !== "TENTATIVESCORE") {
@@ -719,9 +654,8 @@
                 }
             }
 
-            
 
-            post = JSON.stringify({ ids: items, status: 2});
+            var post = JSON.stringify({ ids: items, status: 2 });
 
             $.ajax({
                 url: '/Home/MarkItems',
@@ -730,18 +664,16 @@
                 data: post,
                 contentType: 'application/json',
                 async: false,
-                success: function (data) {
+                success: function(data) {
                     ReLoadDataTable();
                     console.debug(data);
                 },
-                error: function (data) {
+                error: function(data) {
                     console.debug(data);
                 }
-
             });
 
-        }
-
+        };
 
         //adminCheckbox
         $("#adminCheckbox").click(function (event) {
@@ -751,67 +683,13 @@
             renderAdmin(isAdmin);
 
         });
-       ////Filters based on selected column. The dropdowns have a data-col that tells what columun they are associated with..
-        //$(".chosen-select").change(function (event) {
 
-        //    //Clear all Check boxes.
-        //    $("input[type=checkbox]").prop('checked', false);
-
-        //    //e.preventDefault();
-        //    var val = $(this).val();
-        //    var col = $(this).data("col");
-        //    //alert(col);
-
-        //    //save filter
-        //    var table = $('#datatable2').DataTable();
-        //    if (val == "-1") {
-        //        saveQueryValue(col, "");
-        //        table.column(col)
-        //            .search('', true, false)
-        //            .draw();
-        //    } else {
-        //        saveQueryValue(col, val);
-        //        table.column(col)
-        //            .search(val ? $(this).val() : val, true, false)
-        //            .draw();
-        //    }
-        //    table.state.save();
-
-        //    prepareIds();
-
-
-        //});
         $("#completeButton").button().click(function (event) {
             $(".dlgfixed").center(true);
             //All the checked rows should be removed.
             //Spin through each row in the DataTable, if that row is checked, remove it.
             //Need to grab the correctly sorted and filtered dataset.
             var rows = $("#datatable2").dataTable()._('tr', { "filter": "applied" });
-
-            for (var i = 0; i < rows.length; i++) {
-                //var row = rows[i].data();
-                var rowId = rows[i][0]; //.find("td:eq(1)").text();
-                //var rowId = row[0];
-                //alert(rowId);
-                var rowCheckBox = $('#Checkbox' + rowId);
-                //alert(rowCheckBox);
-                var isChecked = rowCheckBox.prop('checked');
-
-                //alert(isChecked);
-
-
-
-                if (isChecked) {
-                    //alert("Removing: " + rowId);
-                    //var oTable = $("#studentList").dataTable();
-                    //$("#studentList").dataTable().row(rowCheckBox.parents('tr')).remove();
-                    // oTable.fnDeleteRow(oTable.fnGetPosition(rows[i][0]));
-                    //rows[i].remove(); //.draw(false);
-                    //alert("Row: " + rowId + " removed");
-                }
-
-
-            }
 
             //START VALIDATION
             var closeIt = false;

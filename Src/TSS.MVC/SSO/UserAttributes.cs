@@ -130,7 +130,12 @@ namespace TSS.MVC
             {
                 //IF NO COOKIE SET RETURN FIRST TENANCY
                 if (HttpContext.Current.Request.Cookies.Get(ACTIVE_DISTRICT) == null)
-                    HttpContext.Current.Response.Cookies.Set(new HttpCookie(ACTIVE_DISTRICT, UserAttributes.SAML.TenancyChainList[0].DistrictID));
+                {
+                    string userId = UserAttributes.SAML.TenancyChainList[0]
+                        .DistrictID;
+                    HttpContext.Current.Response.Cookies.Set(new HttpCookie(ACTIVE_DISTRICT,userId));
+                    new TestImportRepository().UpdateTeacherDistrictRelationship(this.sbacUUID, userId);
+                }
 
                 return HttpContext.Current.Request.Cookies.Get(ACTIVE_DISTRICT).Value; 
                 

@@ -28,6 +28,10 @@ namespace TSS.Services
             _testImportRepository = testImportRepository;
         }
 
+         public void UpdateTeacherDistrictRelationship(string teacherId, string districtId)
+         {
+            _testImportRepository.UpdateTeacherDistrictRelationship(teacherId, districtId);
+         }
         public School PopulateSchoolFromTdsReport(TDSReport tdsReport)
         {
             var school = new School();
@@ -127,7 +131,7 @@ namespace TSS.Services
                                 student.FirstName = obj.value;
                                 break;
                             }
-                        case "LastName":
+                        case "LastOrSurname":
                             {
                                 student.LastName = obj.value;
                                 break;
@@ -211,10 +215,12 @@ namespace TSS.Services
             {
                 //if an item hasn’t been configured in THSS – ignore the item.
                 if (!itemTypes.Any(l => l.ItemKey == (int)item.key && l.BankKey == (int)item.bankKey)) continue;
+                
                 //If the item has no score status or is ‘scored’ in the XML – ignore the item.
-                if ((!item.scoreStatusSpecified) || item.scoreStatus == TDSReportOpportunityItemScoreStatus.SCORED) continue;
+                if (String.IsNullOrEmpty(item.scoreStatus) || 
+                    item.scoreStatus == TDSReportOpportunityItemScoreStatus.SCORED.ToString()) continue;
+                
                 //If the item is ‘not scored’ in the THSS and has any status other than ‘scored’ in the XML , set status at not scored in thss
-                int scoreStatus = (item.scoreStatus != TDSReportOpportunityItemScoreStatus.SCORED) ? 0 : 2;
                 
                 if (item.Response.Text == null) item.Response.Text = new string[0];
                 var studentResponse = new StudentResponse()
@@ -226,7 +232,7 @@ namespace TSS.Services
                     ResponseDate = item.Response.date,
                     Response = string.Join("", item.Response.Text),
                     SegmentId = item.segmentId,
-                    ScoreStatus = scoreStatus
+                    ScoreStatus = 0 // NOTSCORED, the only kind we import
                 };
 
                 responses.Add(studentResponse);

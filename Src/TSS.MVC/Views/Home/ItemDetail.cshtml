@@ -74,9 +74,6 @@
 <script type="text/javascript">
    
     $(function () {
-        var storage = $.localStorage;
-
-
         var currentAssignmentId = '@Model.AssignmentId',
             prevAssignmentId,
             nextAssignmentId;
@@ -91,18 +88,30 @@
             }).fail(function (resp) {
                 console.log(resp);
                 alert("Unable to load item.");
-            });
-          
+            });          
         }
-        
+
+        var getAllAssignmentsSorted = function(cb) {
+            var query = TSS.Common.getQuery();
+            var dataSource = '/api/item/getAssignedItems';
+            var postData = {
+                sortColumn: query.sortColumn,
+                sortDirection: query.sortDirection,
+                filters: TSS.Common.getAppliedFilters()
+            };
+
+            jQuery.post(dataSource, postData, function (rdata) {
+                TSS.Common.saveAssignmentIds(rdata.AllAssignmentIds);
+                cb();
+            });
+        };
         /**
          * Update next/prev items, update UI based on where we are in the item set
          */
-        function updateItemSet(assignmentId) {
-            //$.cookie("currentId", assignmentId);
-            storage.set("TSS_CURRENTID",assignmentId);
-            //var currentIds = $.cookie("currentIds");
-            var currentIds = storage.get("TSS_CURRENTIDS");
+        function updateItemSet() {
+
+            TSS.Common.setCurrentAssignmentId(currentAssignmentId);
+            var currentIds = TSS.Common.getAssignmentIds();
             var ids = [];
             if (currentIds.toString().indexOf('|') > -1)
                 ids = currentIds.split('|');
@@ -141,9 +150,6 @@
         // Previous Clicked
         $("#previousButton").click(function (e) {
             if( ! $("#previousButton").attr("disabled")){
-                //e.preventDefault();
-                //loadItem(prevAssignmentId);
-                //window.history.replaceState({ url: "/Home/ItemDetail/" + prevAssignmentId }, '', "/Home/ItemDetail/" + prevAssignmentId);
                 window.location.href = "/Home/ItemDetail/" + prevAssignmentId;
             }
         });
@@ -151,23 +157,18 @@
         // Next Clicked 
         $("#nextButton").click(function (e) {
             if( ! $("#nextButton").attr("disabled")){
-                //e.preventDefault();
-                //loadItem(nextAssignmentId);
-                //window.history.replaceState({ url: "/Home/ItemDetail/" + nextAssignmentId }, '', "/Home/ItemDetail/" + nextAssignmentId);
                 window.location.href = "/Home/ItemDetail/" + nextAssignmentId;
             }
         });
 
 
         // Initial load
-        updateItemSet();
-        loadItem(currentAssignmentId);
-
+        // populate next/last assignment data
+        getAllAssignmentsSorted(function() {
+            updateItemSet();
+            loadItem(currentAssignmentId);
+        });
     });
-
-    
-   
-   
     
     $(document).ready(function () {
 
@@ -223,7 +224,7 @@
             console.log("assignedId: " + assignedId);
 
             //Now pull out the Data for each Row and put in the scoreArray:
-            for (i = 0; i < numberOfRows; i++) {
+            for (var i = 0; i < numberOfRows; i++) {
                 var scoreObject = $('#Number_' + i.toString());
                 scoreArray[i] = scoreObject.val();
                 var conditionSelected = $('#ItemDimensions_' + i.toString() + '__ConditionCode option:selected').val();
@@ -284,11 +285,6 @@
 
             var currentId = $.cookie("currentId");
             console.log("currentId: " + currentId);
-
-            //alert(currentIds);
-
-
-
         });
 
         //BackButton
@@ -296,7 +292,6 @@
             location.href = "/Home/ItemList?loadfromstorage";
             event.preventDefault();
         });
-
     });
    
     

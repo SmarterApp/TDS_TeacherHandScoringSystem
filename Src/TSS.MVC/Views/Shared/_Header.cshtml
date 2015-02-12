@@ -8,7 +8,7 @@
         ViewBag.GivenName = "";
         if (HttpContext.Current.Request.Cookies.Get("TSS-MAIL") != null)
         {
-            ViewBag.GivenName = TSS.MVC.Encryption.SimpleDecrypt(HttpContext.Current.Request.Cookies.Get("TSS-MAIL").Value, "45AC7AE85F63E668", "B262ACF431AD96F4", 0);
+            ViewBag.GivenNalme = TSS.MVC.Encryption.SimpleDecrypt(HttpContext.Current.Request.Cookies.Get("TSS-MAIL").Value, "45AC7AE85F63E668", "B262ACF431AD96F4", 0);
         }
     }
     ViewBag.HdrOpenAmSites = new TSS.MVC.Models.OpenamSiteModel().DropdownInfo;

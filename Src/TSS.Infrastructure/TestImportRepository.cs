@@ -8,6 +8,7 @@
 //  * http://www.smarterapp.org/documents/American_Institutes_for_Research_Open_Source_Software_License.pdf                                                                                                                                                 
 //  ******************************************************************************/ 
 #endregion
+using System;
 using System.Data;
 using System.Data.SqlClient;
 using TSS.Data.Sql;
@@ -107,6 +108,20 @@ namespace TSS.Data
             return rtnCode == false;
         }
 
+        public void UpdateTeacherDistrictRelationship(string teacherId, string districtId)
+        {
+            SqlCommand command = CreateCommand(CommandType.StoredProcedure, "dbo.sp_UpdateDistrictTeacherRelationship", districtId);
+            command.AddValue("TeacherId",teacherId);
+            command.AddValue("DistrictId",districtId);
+            try
+            {
+                ExecuteNonQuery(command);
+            }
+            catch (Exception exp)
+            {
+                LoggerRepository.LogException(exp);
+            }
+        }
         public bool BatchProcessAssingmentAndResponse(string xmlInputs,string district)
         {
             SqlCommand command = CreateCommand(CommandType.StoredProcedure, "dbo.sp_SaveAssignmentAndResponses",district);

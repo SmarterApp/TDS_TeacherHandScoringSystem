@@ -19,6 +19,7 @@ namespace TSS.Data
     {
         AssignmentPage GetAssignmentsByAssignedToTeacherIDList(AssignedItemsQuery query);
         StudentResponseAssignment GetAssignmentById(Guid assignmentId);
+        AssignmentPage GetSortedAssignmentIds(AssignedItemsQuery query);
         bool ReAssign(string[] assignmentIds, Teacher teacher);
         bool RemoveAssignments(string[] assignmentIDs);
         IList<StudentResponseAssignment> GetAssignmentsByIDList(string[] assignmentIDs);

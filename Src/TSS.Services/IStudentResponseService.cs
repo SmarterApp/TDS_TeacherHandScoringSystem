@@ -18,6 +18,7 @@ namespace TSS.Services
     public interface IStudentResponseService
     {
         AssignmentPage GetAssignmentsByAssignedToTeacherIDList(AssignedItemsQuery query);
+        AssignmentPage GetSortedAssignmentIds(AssignedItemsQuery query);
         StudentResponseAssignment GetAssignmentById(Guid assignmentId);
         bool ReAssign(string[] assignmentIDs, Teacher teacher);
         bool RemoveAssignments(string[] assignmentIDs);

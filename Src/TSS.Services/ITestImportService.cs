@@ -26,5 +26,6 @@ namespace TSS.Services
         Test PopulateTestFromTdsReport(TDSReport tdsReport);
         District PopulateDistrictFromTdsReport(TDSReport tdsReport);
         List<StudentResponse> PopulateItemsFromTdsReport(TDSReport tdsReport);
+        void UpdateTeacherDistrictRelationship(string teacherId, string districtId);
     }
 }

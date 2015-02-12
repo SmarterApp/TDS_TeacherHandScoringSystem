@@ -78,6 +78,19 @@ namespace TSS.MVC.Areas.Api.Controllers
 
         }
 
+        // get a full list of assignment ids for this user, sorted according to 
+        // latest query parameters
+        [System.Web.Mvc.HttpPost]
+        public ActionResult GetAssignedItems(AssignedItemsQuery query)
+        {
+            List<string> assignments = new List<string>();
+            query.UserUUID = UserAttributes.SAML.TSSUserID;
+
+            // User ID list is really just this user, used to get row count.
+            AssignmentPage page = _studentResponseService.GetSortedAssignmentIds(query);            
+            return Json(page);
+        }
+
         // GET api/item/list
         [System.Web.Mvc.HttpPost]
         public ActionResult List(AssignedItemsQuery query)
@@ -200,7 +213,6 @@ namespace TSS.MVC.Areas.Api.Controllers
 
                                 itemType.Modified = true;
 
-  
                                 itemType.Dimensions.Clear();
                                 foreach (var dimension in obj.dimensions)
                                 {
