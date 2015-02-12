@@ -265,7 +265,8 @@ please find dependencies in `<root>\package`
 *  Updated integration with IRIS
 *  Various Bug Fixes
 
-
+2/11/2015
+*    Moved DB files to top level, removed some unused files.
 
 ## Future Enhancements 
 The following features and tasks are not included in the 2/6/2015 release:
