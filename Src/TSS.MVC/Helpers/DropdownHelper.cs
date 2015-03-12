@@ -1,4 +1,14 @@
-﻿#region License
+#region License
+// /*******************************************************************************                                                                                                                                    
+//  * Educational Online Test Delivery System                                                                                                                                                                       
+//  * Copyright (c) 2014 American Institutes for Research                                                                                                                                                              
+//  *                                                                                                                                                                                                                  
+//  * Distributed under the AIR Open Source License, Version 1.0                                                                                                                                                       
+//  * See accompanying file AIR-License-1_0.txt or at                                                                                                                                                                  
+//  * http://www.smarterapp.org/documents/American_Institutes_for_Research_Open_Source_Software_License.pdf                                                                                                                                                 
+//  ******************************************************************************/ 
+#endregion
+#region License
 // /*******************************************************************************                                                                                                                                    
 //  * Educational Online Test Delivery System                                                                                                                                                                       
 //  * Copyright (c) 2014 American Institutes for Research                                                                                                                                                              
@@ -120,22 +130,22 @@ namespace TSS.MVC.Helpers
 			return tssTestAdministrators;
 		}
 
-		internal static List<SelectListItem> GetTssEntities()
-		{
+        //internal static List<SelectListItem> GetTssEntities()
+        //{
 
-			var tssEntities = new List<SelectListItem>
-			{
-				new SelectListItem { Value="State", Text="State" },
-				new SelectListItem { Value="District", Text="District" },
-				new SelectListItem { Value="School", Text="School" }
-			};
+        //    var tssEntities = new List<SelectListItem>
+        //    {
+        //        new SelectListItem { Value="State", Text="State" },
+        //        new SelectListItem { Value="District", Text="District" },
+        //        new SelectListItem { Value="School", Text="School" }
+        //    };
 
-			InsertBlankSelectItem(tssEntities);
+        //    InsertBlankSelectItem(tssEntities);
 
 
 
-			return tssEntities;
-		}
+        //    return tssEntities;
+        //}
 
 		internal static List<SelectListItem> GetTssReassignTeachers()
 		{

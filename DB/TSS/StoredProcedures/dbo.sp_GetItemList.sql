@@ -54,9 +54,53 @@ BEGIN
 	IF(ISNULL(@SortDirection, '') = '')
 	  SET @SortDirection = 'ASC'
 
+    DECLARE @RowNumSortColumn VARCHAR(100)
+	SET @RowNumSortColumn = @SortColumn
+	
 	IF(ISNULL(@SortColumn, '') = '')
-	  SET @SortColumn = 'AssignmentId'
+	BEGIN
+	  SET @SortColumn = 'AssignmentId'+ ' ' + @SortDirection
+	  SET @RowNumSortColumn = 'a.AssignmentId'+ ' ' + @SortDirection
+    END 
+    
+    IF(ISNULL(@SortColumn, '') = 'ItemKey')
+    BEGIN
+      SET @SortColumn = 'ItemKey' + ' ' + @SortDirection
+	  SET @RowNumSortColumn = 'i.ItemKey'+ ' ' + @SortDirection
+	END
+	
+	 IF(ISNULL(@SortColumn, '') = 'SessionId')
+    BEGIN
+      SET @SortColumn = 'SessionId' + ' ' + @SortDirection+ ', ' + 'AssignmentId ASC'
+	  SET @RowNumSortColumn = 'a.SessionId'+ ' ' + @SortDirection+ ', ' + 'AssignmentId ASC'
+	END
 
+    IF(ISNULL(@SortColumn, '') = 'AssignedTo')
+    BEGIN
+      SET @SortColumn = 'AssignedTo' + ' ' + @SortDirection+ ', ' + 'AssignmentId ASC'
+	  SET @RowNumSortColumn = 'te.Name'+ ' ' + @SortDirection+ ', ' + 'AssignmentId ASC'
+	END
+
+    IF(ISNULL(@SortColumn, '') = 'ScoreStatus')
+    BEGIN
+	  SET @SortColumn = 'ScoreStatus' + ' ' + @SortDirection + ', ' + 'AssignmentId ASC'
+	  SET     @RowNumSortColumn = 'ScoreStatus' + ' ' + @SortDirection + ', ' + 'AssignmentId ASC'
+    END
+
+    IF(ISNULL(@SortColumn, '') = 'StudentName')
+    BEGIN 
+	  IF (@PassPhrase IS NOT NULL) 
+	  BEGIN
+	    SET @SortColumn = 'StudentName'+ ' ' + @SortDirection
+		SET @RowNumSortColumn = 'dbo.fn_DecryptValue(@PassPhrase, s.Name)'+ ' ' + @SortDirection + ', ' + 'AssignmentId ASC'
+		END
+	  ELSE 
+	  BEGIN
+	    SET @SortColumn = 'StudentName' + ' ' + @SortDirection
+	    SET @RowNumSortColumn = 's.FirstName + '' '' + s.LastName'+ ' ' + @SortDirection + ', ' + 'AssignmentId ASC'
+	    END
+	END 
+	
 	DECLARE @TestFilterCond		VARCHAR(500)
 	DECLARE @SessionFilterCond	VARCHAR(500)
 	DECLARE @GradeFilterCond	VARCHAR(500)
@@ -73,7 +117,7 @@ BEGIN
 	DECLARE @SQL NVARCHAR(4000)
 	SET @SQL = ' SELECT * 
 				 FROM ( 
-					SELECT ROW_NUMBER() OVER (ORDER BY a.AssignmentID)	AS ROWNUM
+					SELECT ROW_NUMBER() OVER (ORDER BY ' + @RowNumSortColumn +')	AS ROWNUM
 						 , te.Name										AS AssignedTo
 						 , a.SessionId
 						 , a.ScoreStatus
@@ -82,25 +126,25 @@ BEGIN
 						 , CASE WHEN @PassPhrase IS NOT NULL THEN dbo.fn_DecryptValue(@PassPhrase, s.Name) ELSE (s.FirstName + '' '' + s.LastName) END AS StudentName
 						 , a.AssignmentId
 						 , te.TeacherID									AS TeacherUUID 
-					FROM dbo.Assignments a
-						JOIN dbo.Teachers te ON te.TeacherID = a.TeacherID
-						JOIN dbo.Responses r ON r.ResponseID = a.ResponseID
+					FROM dbo.Assignments a (NOLOCK)
+						JOIN dbo.Teachers te (NOLOCK) ON te.TeacherID = a.TeacherID
+						JOIN dbo.Responses r (NOLOCK) ON r.ResponseID = a.ResponseID
 						JOIN dbo.Items i ON i.BankKey = r.BankKey AND i.ItemKey = r.ItemKey						
-						JOIN dbo.Students s ON s.StudentID = a.StudentID
-						JOIN dbo.Tests t ON a.TestID = t.TestID
+						JOIN dbo.Students s (NOLOCK) ON s.StudentID = a.StudentID
+						JOIN dbo.Tests t (NOLOCK) ON a.TestID = t.TestID
 						JOIN #IdTable id ON id.EmailID = a.TeacherID
 					WHERE ' + @ScorerFilterCond + ' 
 						  AND ' + @TestFilterCond + '
 						  AND ' + @SessionFilterCond + '
 						  AND ' + @GradeFilterCond + '
 						  AND ' + @SubjectFilterCond + '
-						  AND a.ScoreStatus != 2	
-						  --AND (i.HandScored = 1 OR i.HandScored is NULL) 		--should only return hand scorable items
+						  AND a.ScoreStatus < 2	
+						  AND (i.HandScored = 1 OR i.HandScored is NULL) 		--should only return hand scorable items
 						  --01.13.2015: This filter is no longer needed. Bcoz Assignments are only created for handscored items. 
 				  ) AS RESULTSET 
 				WHERE ROWNUM >= @StartRow 
 					AND ROWNUM < @EndRow 
-				ORDER BY ' + @SortColumn + ' ' + @SortDirection;
+				ORDER BY ' + @SortColumn ;
 				
 	--PRINT @SQL
 	

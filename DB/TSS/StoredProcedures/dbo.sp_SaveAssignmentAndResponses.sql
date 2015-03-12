@@ -8,6 +8,12 @@
   * http://www.smarterapp.org/documents/American_Institutes_for_Research_Open_Source_Software_License.pdf                                                                                                                                                 
   ******************************************************************************/ 
 */
+USE [TSS_Debug_1]
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
 
 /*
 	Description: SAVES ASSIGNMENT AND RESPONSE DATA TO THE APPROPRIATE TABLES
@@ -17,10 +23,12 @@
 	NotScored = 0
     TentativeScore = 1
 	Scored = 2
+	
+	DATE: 3/6/2015 - Aaron added dependent items handling
   	
 */
             
-CREATE PROCEDURE [dbo].[sp_SaveAssignmentAndResponses] 
+CREATE PROCEDURE [dbo].[sp_SaveAssignmentAndResponses]
     @xmlInputs	 XML   	  
 AS
 BEGIN 
@@ -31,13 +39,14 @@ BEGIN
 	
 	DECLARE @StartDate  DATETIME
 	DECLARE @EndDate	DATETIME
-	DECLARE @Comment	VARCHAR(8000)
-	DECLARE @RespFlag	BIT	
-
+	
 	SET @StartDate = GETDATE()
 	
+	DECLARE @RespFlag	BIT	
 	DECLARE @hDoc		INT
 	DECLARE @ErrorFlag	BIT
+	DECLARE @Err		VARCHAR(8000)
+	
 	SET @ErrorFlag = 0
 
 	EXEC sp_xml_preparedocument @hDoc OUTPUT, @xmlInputs
@@ -48,14 +57,12 @@ BEGIN
     FROM OPENXML (@hDoc, '/Root/Assignment') 
 	WITH ( TestId			VARCHAR(255)
 		 , TeacherId		NVARCHAR(250) 
-		 , StudentId		BIGINT
-		 , SchoolId			VARCHAR(100)
+		 , StudentId		BIGINT	
 		 , SessionId		NVARCHAR(240)
 		 , OpportunityId	BIGINT
 		 , OpportunityKey	UNIQUEIDENTIFIER
 		 , ClientName		VARCHAR(100)
-		 , CallbackUrl		NVARCHAR(MAX)) AS x		--score status should be part of item xml attribute ?? check with Lynn ??
-
+		 , CallbackUrl		NVARCHAR(MAX)) AS x
 
     SELECT *
 		 , NEWID() AS ResponseID 
@@ -63,27 +70,41 @@ BEGIN
     FROM OPENXML (@hDoc, '/Root/ItemList/Item') 
 	WITH ( ItemKey		INT				
 		 , BankKey		INT
-		 , ContentLevel NVARCHAR(MAX)
-		 , Format		NVARCHAR(MAX)
-		 , SegmentId	NVARCHAR(MAX)	
+		 , ContentLevel VARCHAR(100)
+		 , Format		VARCHAR(50)
+		 , SegmentId	VARCHAR(255)	
 		 , ScoreStatus	INT
 		 , ResponseDate DATETIME
-		 , Response		VARCHAR(MAX) 'Response/.') AS x
+		 , Response		NVARCHAR(MAX) 'Response/.') AS x
 
+    
 
-	/*	SELECT * FROM #Assignment
-		SELECT * FROM #ResponseList
-	*/
-
+    declare @oppKey  UNIQUEIDENTIFIER
+    set @oppKey = (select top 1 OpportunityKey from #Assignment)
+	
+	declare @dependentItems TABLE (
+	       ItemKey		INT				
+		 , BankKey		INT
+		 )
+    
+    -- Get the machine-scored items from response list and move them to another table
+    -- This is the list of dependent items
+    insert into @dependentItems select 
+          resp.ItemKey
+        , resp.BankKey
+        from #ResponseList resp
+    join dbo.Items itm on itm.BankKey=resp.BankKey and itm.ItemKey=resp.ItemKey and itm.HandScored = 0
+    
+    -- Force machine-scored items to be scored so teachers can't score them
+    Update resp SET ScoreStatus=2 from #ResponseList resp 
+    join @dependentItems dep on dep.BankKey=resp.BankKey and dep.ItemKey=resp.ItemKey    
+    
 	-- check if the response data is already loaded
 	-- set the flag to 0 if rows does not exists, 1 if row exists
-	  SET @RespFlag = (CASE WHEN (SELECT COUNT(*) FROM dbo.Assignments a
-								 INNER JOIN  #Assignment t
-						         ON t.TestID = a.TestID AND t.StudentID = a.StudentID AND t.TeacherID = a.TeacherID 
-						         AND t.OpportunityKey = a.OpportunityKey) > 0 THEN 1
-						 ELSE 0 END)											   
+	  SET @RespFlag = (CASE WHEN exists (SELECT 1 from Assignments where OpportunityKey=@oppKey)
+							THEN 1
+							ELSE 0 END)											   
 							
-	--SELECT @RespFlag
 
 	-- USE CASE#1: check if data already exists in the database, and if the scored status is set to 'Scored' for all responses in the XML
 	-- if conditions satisfy, do nothing
@@ -101,6 +122,7 @@ BEGIN
 	IF @RespFlag = 0
 	BEGIN
 	BEGIN TRANSACTION	
+	BEGIN TRY
 		--PRINT 'USE CASE#2'
 		
 		INSERT INTO [dbo].[Responses]
@@ -121,14 +143,7 @@ BEGIN
 			 , ResponseDate
 			 , SegmentId
 		FROM #ResponseList 
-
-		-- delete from #ResponseList items that are not handscored
-		-- we do not need to create assignment rows for such data
-		DELETE r
-		FROM #ResponseList r
-			JOIN dbo.Items i ON i.BankKey = r.BankKey AND i.ItemKey = r.ItemKey
-		WHERE i.HandScored = 0
-
+		
 				
 		INSERT INTO [dbo].[Assignments]
 			   ([SessionId]
@@ -138,8 +153,7 @@ BEGIN
 			   ,[CallbackUrl]
 			   ,[ClientName]
 			   ,[ResponseID]
-			   ,[TeacherID]
-			   ,[SchoolID]
+			   ,[TeacherID]		
 			   ,[StudentID]
 			   ,[TestID])
 		SELECT SessionId
@@ -149,12 +163,19 @@ BEGIN
 			 , CallbackUrl
 			 , ClientName
 			 , r.ResponseID
-			 , TeacherID
-			 , SchoolID
+			 , TeacherID			
 			 , StudentID
 			 , TestID
-		FROM #Assignment a, #ResponseList r
-			
+		FROM #Assignment a, #ResponseList r		
+				
+	END TRY
+	BEGIN CATCH
+		ROLLBACK
+		SET @Err = ERROR_MESSAGE()
+		SET @ErrorFlag = 1
+		EXEC dbo.sp_WritedbLatency 'dbo.sp_SaveAssignmentAndResponses', @StartDate, @EndDate, @Err
+		RETURN
+	END CATCH			
 	COMMIT TRANSACTION
 	END								
 
@@ -173,6 +194,8 @@ BEGIN
 		  , New_ScoreStatus		INT
 		  , New_Response		VARCHAR(MAX)
 		  , New_ResponseDate	DATETIME 
+		  , HasRespChanged		BIT
+		  , MachineScored        BIT
 		)
 		
 		INSERT INTO @UpdateToResponseData		
@@ -182,48 +205,106 @@ BEGIN
 			 , rl.ScoreStatus   AS New_ScoreStatus
 			 , rl.Response		AS New_Response 
 			 , rl.ResponseDate	AS New_ResponseDate	 
-		FROM dbo.Assignments a
-			JOIN #Assignment t ON t.TestID = a.TestID AND t.StudentID = a.StudentID AND t.TeacherID = a.TeacherID AND t.OpportunityKey = a.OpportunityKey
-			JOIN dbo.Responses r ON r.ResponseID = a.ResponseID
+			 , (CASE WHEN rl.Response = r.Response THEN 0 ELSE 1 END) HasRespChanged
+			 , (CASE WHEN EXISTS (SELECT 1 from @dependentItems dep
+			      where dep.ItemKey = r.ItemKey and dep.BankKey = r.BankKey) THEN 1 ELSE 0 END) MachineScored
+		FROM dbo.Assignments a (NOLOCK)
+			JOIN dbo.Responses r (NOLOCK) ON r.ResponseID = a.ResponseID
 			JOIN #ResponseList rl ON rl.ItemKey = r.ItemKey AND rl.BankKey = r.BankKey AND rl.SegmentID = r.SegmentID
-		WHERE rl.ScoreStatus != 2 --Ignore responses that have scoreStatus = 'Scored' on XML		
+			where a.OpportunityKey=@oppKey
+		-- Aaron 3/6/2015.  Consider scored items also since we have dependent items. 
+		-- WHERE rl.ScoreStatus IN  (0, 1) --Ignore responses that have scoreStatus = 'Scored' on XML		
 			 
-		-- irrespective of whether the response is scored in THSS or not update the response		
+		-- update response if it has changed since last entry		
 		UPDATE r
 		SET Response = u.New_Response
 		  , ResponseDate = u.New_ResponseDate
 		FROM dbo.Responses r
 			JOIN @UpdateToResponseData u ON u.ResponseID = r.ResponseID
+		WHERE u.HasRespChanged = 1	
 			
-		-- if response has 'Scored' status in THSS, reset the status
+		-- if response has changed and score status is 'Scored', reset the score status
+		-- But only handscored items, though
 		UPDATE a
 		SET ScoreStatus = 0 --NOT SCORED
 		  , ScoreData   = NULL 
 		FROM dbo.Assignments a
 			JOIN @UpdateToResponseData u ON u.AssignmentID = a.AssignmentID
-		WHERE a.ScoreStatus = 2 --SCORED
+		WHERE a.ScoreStatus = 2  --SCORED
+			AND u.HasRespChanged = 1 and u.MachineScored = 0
+			
+		-- non-HS items MUST be set to scored, so we don't score them.
+		-- This will fix existing records where this was not done.
+		UPDATE a
+		SET ScoreStatus = 2 --NOT SCORED
+		FROM dbo.Assignments a
+			JOIN @UpdateToResponseData u ON u.AssignmentID = a.AssignmentID
+		WHERE u.MachineScored = 1
+			
+        -- If we are importing dependent items that were not imported on a previous run, 
+        -- there may be some responses that are not in the table yet.  Otherwise the 
+        -- logic above added them and we can forget about them
+        delete resp from #responseList rlist 
+        JOIN Assignments assign ON assign.OpportunityKey=@oppKey
+        join Responses resp on resp.ResponseID=assign.ResponseID
+        where resp.BankKey = rlist.BankKey and resp.ItemKey=rlist.ItemKey                
+        				
+	INSERT INTO [dbo].[Responses]
+			   ([ResponseID]
+			   ,[BankKey]
+			   ,[ContentLevel]
+			   ,[Format]
+			   ,[ItemKey]
+			   ,[Response]
+			   ,[ResponseDate]
+			   ,[SegmentId])
+		SELECT ResponseID
+			 , BankKey
+			 , ContentLevel
+			 , Format
+			 , ItemKey
+			 , Response
+			 , ResponseDate
+			 , SegmentId
+		FROM #ResponseList 
+		
+				
+		INSERT INTO [dbo].[Assignments]
+			   ([SessionId]
+			   ,[OpportunityId]
+			   ,[OpportunityKey]
+			   ,[ScoreStatus]
+			   ,[CallbackUrl]
+			   ,[ClientName]
+			   ,[ResponseID]
+			   ,[TeacherID]		
+			   ,[StudentID]
+			   ,[TestID])
+		SELECT SessionId
+			 , OpportunityId
+			 , OpportunityKey
+			 , ScoreStatus
+			 , CallbackUrl
+			 , ClientName
+			 , r.ResponseID
+			 , TeacherID			
+			 , StudentID
+			 , TestID
+		FROM #Assignment a, #ResponseList r		
 				
 	END
 
-	
-	IF @@TRANCOUNT > 0
-	BEGIN
-		ROLLBACK TRANSACTION
-		SET @ErrorFlag = 1
-	END	
-
+			
 	-- clean-up
 	DROP TABLE #Assignment;
 	DROP TABLE #ResponseList;
 	EXEC sp_xml_removedocument @hDoc;
 
-
 	SELECT @ErrorFlag -- 0 indicates success; 1 indicates failure
-
+	
 	-- latency logging
 	SET @EndDate = GETDATE()	
-	SET @Comment = '@ErrorFlag:' + (CASE @ErrorFlag WHEN 0 THEN 'Success' ELSE 'Failure' END)
-	EXEC dbo.sp_WritedbLatency 'dbo.sp_SaveAssignmentAndResponses', @StartDate, @EndDate, @Comment
+	EXEC dbo.sp_WritedbLatency 'dbo.sp_SaveAssignmentAndResponses', @StartDate, @EndDate
 		           
 END
 

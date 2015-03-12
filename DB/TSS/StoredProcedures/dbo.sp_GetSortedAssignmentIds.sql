@@ -51,20 +51,33 @@ BEGIN
     DECLARE @RowNumSortColumn VARCHAR(100)
     SET @RowNumSortColumn = @SortColumn
     
-	IF ((ISNULL(@SortColumn, '') = '') OR (ISNULL(@SortColumn, '') = 'AssignedTo'))
-	BEGIN	  
-	  SET @SortColumn = 'a.AssignmentId'
-    END 
+     IF ((ISNULL(@SortColumn, '') = ''))
+     BEGIN	  
+	  SET @SortColumn = 'a.AssignmentId' + ' ' + @SortDirection
+     END 
+    
+     IF ((ISNULL(@SortColumn, '') = 'AssignedTo'))
+     BEGIN	  
+	  SET @SortColumn = 'a.AssignmentId' + ' ' + @SortDirection    
+     END 
+     
+     IF ((ISNULL(@SortColumn, '') = 'SessionId'))
+     BEGIN	  
+	  SET @SortColumn = 'a.SessionId' + ' ' + @SortDirection + ', ' + 'a.AssignmentId ASC'   
+     END
     
     IF(ISNULL(@SortColumn, '') = 'ItemKey')
-	  SET @SortColumn = 'i.ItemKey'   
+	  SET @SortColumn = 'i.ItemKey' + ' ' + @SortDirection
+
+     IF(ISNULL(@SortColumn, '') = 'ScoreStatus')
+	  SET @SortColumn = 'a.ScoreStatus' + ' ' + @SortDirection + ', ' + 'a.AssignmentId ASC'   
 	    
     IF(ISNULL(@SortColumn, '') = 'StudentName')
     BEGIN 
 	  IF (@PassPhrase IS NOT NULL) 
-		SET @SortColumn = 'dbo.fn_DecryptValue(@PassPhrase, s.Name)'
+		SET @SortColumn = 'dbo.fn_DecryptValue(@PassPhrase, s.Name)' + ' ' + @SortDirection+ ', ' + 'a.AssignmentId ASC'
 	  ELSE 
-	    SET @SortColumn = 's.FirstName + '' '' + s.LastName'
+	    SET @SortColumn = 's.FirstName + '' '' + s.LastName' + ' ' + @SortDirection+ ', ' + 'a.AssignmentId ASC'
 	END 
 	
 	DECLARE @TestFilterCond		VARCHAR(500)
@@ -92,8 +105,9 @@ BEGIN
 						  AND ' + @GradeFilterCond + '
 						  AND ' + @SubjectFilterCond + '
 						  AND ''' + @TeacherId+ ''' = a.TeacherId 						  
-						  AND a.ScoreStatus != 2	
-				    ORDER BY ' + @SortColumn + ' ' + @SortDirection;
+						  AND a.ScoreStatus < 2	
+						  AND (i.HandScored = 1 OR i.HandScored is NULL) 		--should only return hand scorable items
+				    ORDER BY ' + @SortColumn;
 				
 	-- PRINT @SQL
 	

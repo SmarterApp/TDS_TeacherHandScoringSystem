@@ -94,7 +94,7 @@
                                                             <td id="Dim_@i.ToString()">@Html.DisplayFor(m => m.ItemDimensions[i].Dimension)</td>
                                                             <td>@Html.DisplayFor(m => m.ItemDimensions[i].Points)</td>
                                                             <td>
-                                                                <input class="NumberControl" type="number" step="1" id="Number_@i.ToString()" value="@Model.ItemDimensions[i].Score" max="@Model.ItemDimensions[i].Points" min="0" />
+                                                                <input class="NumberControl" type="number" step="1" id="Number_@i.ToString()" value="@Model.ItemDimensions[i].Score" max="@Model.ItemDimensions[i].Points" min="@Model.ItemDimensions[i].Minval" />
                                                             </td>
                                                             <td>
                                                                 @Html.DropDownListFor(m => m.ItemDimensions[i].ConditionCode, Model.ItemDimensions[i].ConditionCodes, "Not Applicable")
@@ -121,19 +121,18 @@
     
     window.loadBlackbox = function () {
         IRiS.setFrame(frames[0]);
-        var response = '@Html.Raw(System.Text.RegularExpressions.Regex.Replace(Model.Response, @"\t|\n|\r", "").Replace("\"", "&#34;").Replace("\'", "&#39;"))';
-        response = response.replace(/&#34;/g, '"').replace(/&#39;/g, "'"); // undo .NET encoding of quotes
-        var items = "@Model.ContentToken";
-        items = items.replace(/&quot;/g, '"');
-        
-         IRiS.loadToken('@Model.VendorId', items).done(function () {
-            console.log("Setting response: " + response);
-            if (response) IRiS.setResponse(response);
-        }).fail(function () {
-            // alert("Failed to set student response.");
-        });
-         //IRiS.setFrame(frames[0]);
-    };
+        @*var response = '@Html.Raw(System.Text.RegularExpressions.Regex.Replace(Model.Response, @"\t|\n|\r", "").Replace("\"", "&#34;").Replace("\'", "&#39;"))';
+        response = response.replace(/&#34;/g, '"').replace(/&#39;/g, "'");*@ // undo .NET encoding of quotes
+       var response = '@Html.Raw(Model.Response)';
+       var items = '@Html.Raw(Model.ContentToken)';
+       IRiS.loadToken('@Model.VendorId', items).done(function () {
+           console.log("Setting response: " + response);
+           if (response) IRiS.setResponse(response);
+       }).fail(function () {
+           // alert("Failed to set student response.");
+       });
+       //IRiS.setFrame(frames[0]);
+   };
     
     function getParameterByName(name) {
 
@@ -189,8 +188,13 @@
             var selec = $("#ItemDimensions_" + i + "__ConditionCode");
             var msg = "";
 
-
             //set error message
+
+            if (txtbxVal.length > 2) {
+                msg = "Value length should be only two digits";
+                txtbx.val("");
+            }
+
             if (txtbxVal !== "" && txtbxVal < txtbxMin)
                 msg = "Value must be greater than " + (txtbxMin - 1);
 

@@ -1,4 +1,14 @@
-﻿#region License
+#region License
+// /*******************************************************************************                                                                                                                                    
+//  * Educational Online Test Delivery System                                                                                                                                                                       
+//  * Copyright (c) 2014 American Institutes for Research                                                                                                                                                              
+//  *                                                                                                                                                                                                                  
+//  * Distributed under the AIR Open Source License, Version 1.0                                                                                                                                                       
+//  * See accompanying file AIR-License-1_0.txt or at                                                                                                                                                                  
+//  * http://www.smarterapp.org/documents/American_Institutes_for_Research_Open_Source_Software_License.pdf                                                                                                                                                 
+//  ******************************************************************************/ 
+#endregion
+#region License
 // /*******************************************************************************                                                                                                                                    
 //  * Educational Online Test Delivery System                                                                                                                                                                       
 //  * Copyright (c) 2014 American Institutes for Research                                                                                                                                                              
@@ -65,11 +75,63 @@ namespace TSS.Data
        
         public bool HasRun = false;
 
-        // public static int errMod = 0;
+        /// <summary>
+        /// load all child entities for a given parent entityid, for instance, if given a stateid, 
+        /// it returns the district entities or if given a distirctid, it returns the institution entities.
+        /// </summary>
+        /// <param name="entityType">DISTRICT/INSTITUTION</param>
+        /// <param name="parentEntityType">STATE/DISTRICT</param>
+        /// <param name="parentEntityId">DS1/SC12</param>
+        /// <returns></returns>
+        public EntityResultSet GetEntitiesFromApi(string entityType, string parentEntityType, string parentEntityId)
+        {
+            string requestEntityApiUrl = ConfigurationManager.AppSettings["ART_API_REST_API_BASE_URL"].ToString() +
+                                         string.Format("/{0}?{1}Id={2}",
+                                                       HttpUtility.UrlEncode(entityType.ToLower()),
+                                                       HttpUtility.UrlEncode(parentEntityType.ToLower()),
+                                                       HttpUtility.UrlEncode(parentEntityId));
 
+            HttpWebRequest request = WebRequest.Create(requestEntityApiUrl) as HttpWebRequest;
+            request.ContentType = "application/json";
+            request.AllowAutoRedirect = false;
+            //GET DATA
+            try
+            {
+                if (ConfigurationManager.AppSettings["ART_OAUTH_REQUIRED"].ToString().ToLower() == "true")
+                {
+                    if (oAuth.Error())
+                        throw new Exception("Error Code:3001  Message:oAuth Token Failed to load");
+
+                    request.Headers.Add("Authorization", string.Format("Bearer {0}", oAuth.access_token));
+                }
+
+                using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)
+                {
+                    DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(EntityResult[]));
+                    object objResponse = jsonSerializer.ReadObject(response.GetResponseStream());
+                    EntityResult[] jsonResponse = objResponse as EntityResult[];
+                    EntityResultSet result = new EntityResultSet();
+                    if (jsonResponse != null)
+                    {
+                        result.EntityResults = jsonResponse;
+                        result.LoginFailed = false;
+                    }
+                    return result;
+                }
+            }
+            catch (Exception e)
+            {
+                EntityResultSet result = new EntityResultSet();
+                result.LoginFailed = true;
+                result.Error = new Exception("Error Code: 3004", e);
+                return result;
+            }
+
+        }
+
+        // public static int errMod = 0;
         public TeacherResult GetTeachersFromApi(int pageNumber, int pageSize, string role, string associatedEntityId, string level, string state)
         {
-
             string requestUrl = ConfigurationManager.AppSettings["ART_API_URL"].ToString()  
                 + string.Format("?currentPage={0}&pageSize={1}&role={2}&associatedEntityId={3}&ClientID={4}&level={5}&state={6}",
                                                pageNumber,
@@ -140,7 +202,6 @@ namespace TSS.Data
             }
 
         }
-        
 
         private static oAuthToken GetAccessToken()
         {
@@ -247,7 +308,7 @@ namespace TSS.Data
             }
 
         }
-
+         
         public TeacherResult SerializeData(HttpWebResponse response)
         {
             TeacherResult result = new TeacherResult();
@@ -284,6 +345,6 @@ namespace TSS.Data
             }
             return result;
         }
-     
     }
 }
+

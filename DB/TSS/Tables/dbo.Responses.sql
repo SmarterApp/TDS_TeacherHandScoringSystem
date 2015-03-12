@@ -21,6 +21,14 @@ CREATE TABLE [dbo].[Responses] (
     CONSTRAINT [FK2EA47F61CF8ECC0] FOREIGN KEY ([BankKey], [ItemKey]) REFERENCES [dbo].[Items] ([BankKey], [ItemKey])
 );
 
+GO
+/****** Object:  Index [BankKeyAndItemKeyComp]    Script Date: 03/10/2015 13:56:05 ******/
+CREATE NONCLUSTERED INDEX [ix_BankKeyAndItemKeyComp] ON [dbo].[Responses] 
+(
+	[BankKey] ASC,
+	[ItemKey] ASC
+)WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
+GO
 
 GO
 CREATE STATISTICS [_dta_stat_1227151417_1_2_5]

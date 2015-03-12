@@ -14,13 +14,13 @@
 @if (ViewBag.TenancyChain != null)
 {
     <h2>Loading...</h2>
-<script>
-    window.location.href = "/Home/ItemList";
-</script>
+    <script>
+        window.location.href = "/Home/ItemList";
+    </script>
 }
 else
 {
-     <div id="useraccess" title="Access Denied" >
+    <div id="useraccess" title="Access Denied">
         @if (System.Configuration.ConfigurationManager.AppSettings["ACCESS_DENIED"] != null)
         {
             @System.Configuration.ConfigurationManager.AppSettings["ACCESS_DENIED"].ToString();
@@ -45,6 +45,11 @@ else
         });
         $(".dlgfixed").center(true);
         $(".ui-widget-overlay").css("z-index", "9");
+
+        $("#airlogo").on("click", function (event) {
+            $("#btnLogout").trigger("click");
+            event.preventDefault();
+        });
 
     </script>
 }

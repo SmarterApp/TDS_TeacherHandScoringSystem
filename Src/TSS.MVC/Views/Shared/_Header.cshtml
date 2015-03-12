@@ -11,7 +11,7 @@
             ViewBag.GivenNalme = TSS.MVC.Encryption.SimpleDecrypt(HttpContext.Current.Request.Cookies.Get("TSS-MAIL").Value, "45AC7AE85F63E668", "B262ACF431AD96F4", 0);
         }
     }
-    ViewBag.HdrOpenAmSites = new TSS.MVC.Models.OpenamSiteModel().DropdownInfo;
+    ViewBag.HdrOpenAmSites = new TSS.MVC.Models.OpenamSiteModel().DropdownInfo;      
 }
 <script type="text/javascript">
 
@@ -44,8 +44,8 @@
                 <a class="navbar-link hide-control" href="#">Settings</a>Logged in as @ViewBag.GivenName | <a class="navbar-link" href="@System.Configuration.ConfigurationManager.AppSettings["USER_GUIDE_LOCATION"]" >Help</a> | <a class="navbar-link" id="btnLogout" href="@ViewBag.LogoutURL">Logout</a>
             </span>
         </div>
-        <div class="navbar-inner navbar-title">
-            <a class="brand" href="/home/itemlist">
+        <div class="navbar-inner navbar-title" id="logovalidation">
+            <a class="brand" href="/home/itemlist" id="airlogo">
                 <img alt="AIR Logo" src="@Url.Content("~/Images/Logo.png")" />
                 <span class="brandTitle">Teacher Hand Scoring System - @ViewBag.Title</span></a>
 

@@ -1,4 +1,14 @@
-﻿#region License
+#region License
+// /*******************************************************************************                                                                                                                                    
+//  * Educational Online Test Delivery System                                                                                                                                                                       
+//  * Copyright (c) 2014 American Institutes for Research                                                                                                                                                              
+//  *                                                                                                                                                                                                                  
+//  * Distributed under the AIR Open Source License, Version 1.0                                                                                                                                                       
+//  * See accompanying file AIR-License-1_0.txt or at                                                                                                                                                                  
+//  * http://www.smarterapp.org/documents/American_Institutes_for_Research_Open_Source_Software_License.pdf                                                                                                                                                 
+//  ******************************************************************************/ 
+#endregion
+#region License
 // /*******************************************************************************                                                                                                                                    
 //  * Educational Online Test Delivery System                                                                                                                                                                       
 //  * Copyright (c) 2014 American Institutes for Research                                                                                                                                                              
@@ -29,7 +39,7 @@ namespace TSS.MVC.Areas.Api.Models
         public List<SelectListItem> Grade { get; set; }
         public List<SelectListItem> Subject { get; set; }
         public List<SelectListItem> TestAdministrator { get; set; }
-        public List<SelectListItem> Entitie { get; set; }
+        //public List<SelectListItem> Entitie { get; set; }
         public List<SelectListItem> ReassignTeacher { get; set; }
         public int RowCount { get; set; }
         public string District { get; set; }
@@ -54,7 +64,7 @@ namespace TSS.MVC.Areas.Api.Models
             this.Grade = DropdownHelper.GetTssGrades(filters);
             this.Subject = DropdownHelper.GetTssSubjects(filters);
             this.TestAdministrator = DropdownHelper.GetTssTestAdministrators(filters);
-            this.Entitie = DropdownHelper.GetTssEntities().GroupBy(ts => ts.Text).Select(g => g.First()).ToList();
+            //this.Entitie = DropdownHelper.GetTssEntities().GroupBy(ts => ts.Text).Select(g => g.First()).ToList();
             this.ReassignTeacher = new List<SelectListItem>(); // DropdownHelper.GetTssReassignTeachers();
         }
     }

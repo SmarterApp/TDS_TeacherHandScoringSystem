@@ -1,4 +1,14 @@
-﻿#region License
+#region License
+// /*******************************************************************************                                                                                                                                    
+//  * Educational Online Test Delivery System                                                                                                                                                                       
+//  * Copyright (c) 2014 American Institutes for Research                                                                                                                                                              
+//  *                                                                                                                                                                                                                  
+//  * Distributed under the AIR Open Source License, Version 1.0                                                                                                                                                       
+//  * See accompanying file AIR-License-1_0.txt or at                                                                                                                                                                  
+//  * http://www.smarterapp.org/documents/American_Institutes_for_Research_Open_Source_Software_License.pdf                                                                                                                                                 
+//  ******************************************************************************/ 
+#endregion
+#region License
 // /*******************************************************************************                                                                                                                                    
 //  * Educational Online Test Delivery System                                                                                                                                                                       
 //  * Copyright (c) 2014 American Institutes for Research                                                                                                                                                              
@@ -150,67 +160,65 @@ namespace TSS.MVC.Areas.Api.Controllers
         {
             var tdsReport = itemScoreRequest.TDSReport;
             var district = _testImportService.PopulateDistrictFromTdsReport(tdsReport);
+            //var school = _testImportService.PopulateSchoolFromTdsReport(tdsReport);
+            //school.DistrictID = district.DistrictID;
             _testRepository = new TSS.Data.TestImportRepository();
-
-
-            //test info
+            // insert/update district and school
+            //_testRepository.SaveDistrictAndSchool(district, school, district.DistrictID);
+            // insert/update test
             var test = _testImportService.PopulateTestFromTdsReport(tdsReport);
             _testRepository.SaveTest(test, district.DistrictID);
-            //_testService.SaveTest(test);
+            //insert/update teacher
             var teacher = _testImportService.PopulateTeacherFromTdsReport(tdsReport);
-            //_teacherService.SaveTeacher(teacher);
             _testRepository.SaveTeacher(teacher, district.DistrictID);
+            //insert/update student
             var student = _testImportService.PopulateStudentFromTdsReport(tdsReport);
-            //_studentService.SaveStudent(student);
             _testRepository.SaveStudent(student, district.DistrictID);
 
-            var school = _testImportService.PopulateSchoolFromTdsReport(tdsReport);
-            school.DistrictID = district.DistrictID;
+            //insert/update assignments and responses
             StringBuilder xmlInputs = new StringBuilder();
-            xmlInputs.Append(@"<Root>");
-            xmlInputs.Append(@"<District");
-            xmlInputs.Append(" DistrictId=\"" + district.DistrictID + "\"");
-            xmlInputs.Append(" DistrictName=\"" + district.DistrictName + "\"");
-            xmlInputs.Append(@"/>");
-            xmlInputs.Append(@"<School");
-            xmlInputs.Append(" SchoolId=\"" + school.SchoolID + "\"");
-            xmlInputs.Append(" SchoolName=\"" + school.SchoolName + "\"");
-            xmlInputs.Append(" StateName=\"" + school.StateName + "\"");
-            xmlInputs.Append(@"/></Root>");
-            _testRepository.SaveDistrictAndSchool(xmlInputs.ToString(), district.DistrictID);
-
+            XmlWriterSettings xmlWriterSettings = new XmlWriterSettings();
+            xmlWriterSettings.Encoding = Encoding.UTF8;
             // returns all items from tdsReport that have status NOT SCORED and that have a matching item type in the system
-            xmlInputs.Clear();
-            xmlInputs.Append(@"<Root>");
-            xmlInputs.Append(@"<Assignment");
-            xmlInputs.Append(" TestId=\"" + test.TestId + "\"");
-            xmlInputs.Append(" TeacherId=\"" + teacher.TeacherID + "\"");
-            xmlInputs.Append(" StudentId=\"" + student.StudentId + "\"");
-            xmlInputs.Append(" SchoolId=\"" + school.SchoolID + "\"");
-            xmlInputs.Append(" SessionId=\"" + tdsReport.Opportunity.sessionId + "\"");
-            xmlInputs.Append(" OpportunityId=\"" + tdsReport.Opportunity.oppId + "\"");
-            xmlInputs.Append(" OpportunityKey=\"" + tdsReport.Opportunity.key + "\"");
-            xmlInputs.Append(" ClientName=\"" + tdsReport.Opportunity.clientName + "\"");
-            xmlInputs.Append(" CallbackUrl=\"" + itemScoreRequest.callbackUrl + "\"");
-            xmlInputs.Append(@"/><ItemList>");
-            var responses = _testImportService.PopulateItemsFromTdsReport(tdsReport);
-            foreach (var response in responses)
+            using (XmlWriter xmlWriter = XmlWriter.Create(xmlInputs, xmlWriterSettings))
             {
-                xmlInputs.Append(@"<Item");
-                xmlInputs.Append(" ItemKey=\"" + response.ItemKey + "\"");
-                xmlInputs.Append(" BankKey=\"" + response.BankKey + "\"");
-                xmlInputs.Append(" ContentLevel=\"" + response.ContentLevel + "\"");
-                xmlInputs.Append(" Format=\"" + response.Format + "\"");
-                xmlInputs.Append(" SegmentId=\"" + response.SegmentId + "\"");
-                xmlInputs.Append(" ScoreStatus=\"" + response.ScoreStatus + "\"");
-                xmlInputs.Append(" ResponseDate=\"" + response.ResponseDate + "\"");
-                xmlInputs.Append(">");
-                xmlInputs.Append("<Response>");
-                xmlInputs.Append("<![CDATA[" + response.Response + "]]>");
-                xmlInputs.Append("</Response>");
-                xmlInputs.Append(@"</Item>");
+                xmlWriter.WriteStartDocument();
+                xmlWriter.WriteStartElement("Root");
+                xmlWriter.WriteStartElement("Assignment");
+                xmlWriter.WriteAttributeString("TestId", test.TestId);
+                xmlWriter.WriteAttributeString("TeacherId", teacher.TeacherID);
+                xmlWriter.WriteAttributeString("StudentId", student.StudentId.ToString());
+                //xmlWriter.WriteAttributeString("SchoolId", school.SchoolID);
+                xmlWriter.WriteAttributeString("SessionId", tdsReport.Opportunity.sessionId);
+                xmlWriter.WriteAttributeString("OpportunityId", tdsReport.Opportunity.oppId);
+                xmlWriter.WriteAttributeString("OpportunityKey", tdsReport.Opportunity.key);
+                xmlWriter.WriteAttributeString("ClientName", tdsReport.Opportunity.clientName);
+                xmlWriter.WriteAttributeString("CallbackUrl", itemScoreRequest.callbackUrl);
+                xmlWriter.WriteEndElement();//end of assignment node
+                xmlWriter.WriteStartElement("ItemList");
+                var responses = _testImportService.PopulateItemsFromTdsReport(tdsReport);
+                foreach (var response in responses)
+                {
+
+                    xmlWriter.WriteStartElement("Item");
+                    xmlWriter.WriteAttributeString("ItemKey", response.ItemKey.ToString());
+                    xmlWriter.WriteAttributeString("BankKey", response.BankKey.ToString());
+                    xmlWriter.WriteAttributeString("ContentLevel", response.ContentLevel);
+                    xmlWriter.WriteAttributeString("Format", response.Format);
+                    xmlWriter.WriteAttributeString("SegmentId", response.SegmentId);
+                    xmlWriter.WriteAttributeString("ScoreStatus", response.ScoreStatus.ToString());
+                    xmlWriter.WriteAttributeString("ResponseDate", response.ResponseDate.ToString());
+                    xmlWriter.WriteStartElement("Response");
+                    // xmlWriter.WriteString("<![CDATA[" + response.Response + "]]>");
+                    // xmlWriter.WriteString(response.Response);
+                    xmlWriter.WriteCData(response.Response);
+                    xmlWriter.WriteEndElement();//end of response node
+                    xmlWriter.WriteEndElement(); //end of item node
+                }
+                xmlWriter.WriteEndElement();//end of itemlist node
+                xmlWriter.WriteEndElement();//end of root node
+                xmlWriter.Close();
             }
-            xmlInputs.Append(@"</ItemList></Root>");
             _testRepository.BatchProcessAssingmentAndResponse(xmlInputs.ToString(), district.DistrictID);
         }
 
@@ -222,3 +230,4 @@ namespace TSS.MVC.Areas.Api.Controllers
         }
     }
 }
+

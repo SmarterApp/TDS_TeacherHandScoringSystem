@@ -9,13 +9,14 @@
   ******************************************************************************/ 
 */
 
+
 CREATE PROCEDURE [dbo].[sp_SaveStudent] 
     @StudentId		BIGINT
   , @DOB			DATETIME = NULL
-  , @FirstName		VARCHAR(500)   
-  , @LastName		VARCHAR(500)
+  , @FirstName		VARCHAR(500)    
+  , @LastName		VARCHAR(500)  
   , @SSID			VARCHAR(500)
-  , @Name			NVARCHAR(MAX)
+  , @Name			NVARCHAR(MAX) 
   , @TdsLoginId		NVARCHAR(MAX)
   , @Grade			VARCHAR(500)	  
 AS
@@ -31,12 +32,14 @@ BEGIN
 
 	SET @StartDate = GETDATE()
 
-	DECLARE @ErrorFlag BIT
+	DECLARE @ErrorFlag	BIT
+	DECLARE @Err		VARCHAR(8000)
 	SET @ErrorFlag = 0
 
 	IF NOT EXISTS (SELECT 1 FROM dbo.Students WHERE StudentID = @StudentId)	
 	BEGIN	
-	BEGIN TRANSACTION	
+	BEGIN TRANSACTION
+	BEGIN TRY	
 		INSERT INTO [dbo].[Students]
 				   ([StudentID]
 				   ,[Dob]
@@ -55,21 +58,37 @@ BEGIN
 				   , @Grade
 				   , @Name
 				   , @TDSLoginId
-		)
+				)
+	END TRY
+	BEGIN CATCH
+		ROLLBACK
+		SET @Err = ERROR_MESSAGE()
+		SET @ErrorFlag = 1
+		EXEC dbo.sp_WritedbLatency 'dbo.sp_SaveStudent', @StartDate, @EndDate, @Err
+		RETURN
+	END CATCH			
 	COMMIT TRANSACTION
 	END
-	
-	IF @@TRANCOUNT > 0
-	BEGIN
-		ROLLBACK TRANSACTION
-		SET @ErrorFlag = 1
-	END	
-
+	ELSE BEGIN 
+	    IF ((@FirstName IS NOT NULL AND @LastName IS NOT NULL) OR (@Name IS NOT NULL))
+	    BEGIN 
+			UPDATE [dbo].[Students]
+				  SET  
+				  Dob=@DOB,
+				  FirstName=@FirstName,
+				  LastName=@LastName,
+				  SSID=@SSID,
+				  Grade=@Grade,
+				  Name=@Name,
+				  TDSLoginId = @TDSLoginId
+				WHERE StudentID=@StudentID
+		END 
+	END
 	SELECT @ErrorFlag -- 0 indicates success; 1 indicates failure
 
 	-- latency logging
-	SET @EndDate = GETDATE()	
-	SET @Comment = '@ErrorFlag:' + (CASE @ErrorFlag WHEN 0 THEN 'Success' ELSE 'Failure' END)
+	SET @EndDate = GETDATE()
 	EXEC dbo.sp_WritedbLatency 'dbo.sp_SaveStudent', @StartDate, @EndDate, @Comment
 		
 END
+

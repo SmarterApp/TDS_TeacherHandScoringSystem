@@ -8,7 +8,6 @@
   * http://www.smarterapp.org/documents/American_Institutes_for_Research_Open_Source_Software_License.pdf                                                                                                                                                 
   ******************************************************************************/ 
 */
-
 /*
 	Description: RETURNS A  LIST OF ITEMS TO DISPLAYED ON THE ITEM LIST SCREEN
 	Author: TGebicke - Summit
@@ -46,20 +45,23 @@ BEGIN
 
 
 	SELECT COUNT(*) 
-	FROM dbo.Assignments a
-		 JOIN dbo.Teachers te ON te.TeacherID = a.TeacherID
-		 JOIN dbo.Tests t ON a.TestID = t.TestID
-		 JOIN #IdTable e on e.EmailID = a.TeacherID 
+	FROM dbo.Assignments a (NOLOCK)
+	     INNER JOIN dbo.Responses r (NOLOCK) ON a.ResponseID = r.ResponseID
+	     INNER JOIN dbo.Items i (NOLOCK) ON r.BankKey = i.BankKey AND r.ItemKey = i.ItemKey
+		 JOIN dbo.Teachers te (NOLOCK) ON te.TeacherID = a.TeacherID
+		 JOIN dbo.Tests t (NOLOCK) ON a.TestID = t.TestID
+		 INNER JOIN #IdTable e on e.EmailID = a.TeacherID 
 	WHERE (@ScorerFilter = '' OR te.TeacherID = @ScorerFilter)
 		  AND (@TestFilter = '' OR t.TestID = @TestFilter)
 		  AND (@SessionFilter = '' OR a.SessionId = @SessionFilter)
 		  AND (@GradeFilter = '' OR t.Grade = @GradeFilter)
 		  AND (@SubjectFilter = '' OR  t.[Subject] = @SubjectFilter)
-		  AND a.ScoreStatus != 2
+		  AND a.ScoreStatus < 2 AND (i.HandScored = 1 OR i.HandScored IS NULL)
 
 	-- latency logging
 	SET @EndDate = GETDATE()		  	
 	EXEC dbo.sp_WritedbLatency 'dbo.sp_GetItemCount', @StartDate, @EndDate
 		
 END
+
 

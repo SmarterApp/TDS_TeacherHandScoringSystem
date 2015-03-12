@@ -1,4 +1,14 @@
-﻿#region License
+#region License
+// /*******************************************************************************                                                                                                                                    
+//  * Educational Online Test Delivery System                                                                                                                                                                       
+//  * Copyright (c) 2014 American Institutes for Research                                                                                                                                                              
+//  *                                                                                                                                                                                                                  
+//  * Distributed under the AIR Open Source License, Version 1.0                                                                                                                                                       
+//  * See accompanying file AIR-License-1_0.txt or at                                                                                                                                                                  
+//  * http://www.smarterapp.org/documents/American_Institutes_for_Research_Open_Source_Software_License.pdf                                                                                                                                                 
+//  ******************************************************************************/ 
+#endregion
+#region License
 // /*******************************************************************************                                                                                                                                    
 //  * Educational Online Test Delivery System                                                                                                                                                                       
 //  * Copyright (c) 2014 American Institutes for Research                                                                                                                                                              
@@ -81,7 +91,7 @@ namespace TSS.Data
         public bool RemoveAssignments(string[] assignmentIDs)
         {
             bool rtnCode = false;
-            SqlCommand command = CreateCommand(CommandType.StoredProcedure, "[dbo].[sp_RemoveAssignments]");
+            SqlCommand command = CreateCommand(CommandType.StoredProcedure, "[dbo].[sp_RemoveAssignmentsWithDependencies]");
             command.AddValue("AssignmentList", string.Join("|", assignmentIDs));
             ExecuteReader(command, delegate(IColumnReader reader)
             {
@@ -333,32 +343,6 @@ namespace TSS.Data
         }
 
         #region Private helper
-        private IEnumerable<Guid> GetAssignedItems(AssignedItemsQuery query,string testFilter)
-        {
-            List<Guid> assignedResponseIDs = new List<Guid>();
-            SqlCommand command = CreateCommand(CommandType.StoredProcedure, "[dbo].[sp_GetAssignedItems]");
-            command.AddValue("TeacherId", query.UserUUID);
-            command.AddValue("TestFilter", testFilter);
-            command.AddValue("SessionFilter",query.filters.Where(x => x.Key.Contains("a-SessionId")).Select(x => x.Value).FirstOrDefault());
-            command.AddValue("GradeFilter", query.filters.Where(x => x.Key.Contains("test-Grade")).Select(x => x.Value).FirstOrDefault());
-            command.AddValue("SubjectFilter", query.filters.Where(x => x.Key.Contains("test-Subject")).Select(x => x.Value).
-                                 FirstOrDefault());
-            command.AddValue("ScorerFilter", query.filters.Where(x => x.Key == "t-Name").Select(x => x.Value).FirstOrDefault());
-
-            LogParameters(command);
-
-            ExecuteReader(command, delegate(IColumnReader reader)
-
-            {
-                while (reader.Read())
-                {
-                    Guid responseId = reader.GetGuid("AssignmentId");
-                    assignedResponseIDs.Add(responseId);
-                }
-            });
-               
-            return assignedResponseIDs;
-        }
 
         private List<FilterResult> GetFilterResults(AssignedItemsQuery query)
         {
@@ -510,3 +494,4 @@ namespace TSS.Data
         #endregion
     }
 }
+

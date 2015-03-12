@@ -15,6 +15,7 @@ select {
 }
 label {
     font-weight: bold;
+    cursor: default;
 }
 .top-block {
     background: linear-gradient(to bottom, rgba(30, 87, 153, 0.2) 0%, rgba(125, 185, 232, 0) 100%) repeat scroll 0 0 rgba(0, 0, 0, 0);

@@ -265,8 +265,6 @@ please find dependencies in `<root>\package`
 *  Updated integration with IRIS
 *  Various Bug Fixes
 
-### 2/11/2015 
-*  Moved DB files to top level, removed some unused files.
 
 
 ## Future Enhancements 
@@ -274,3 +272,12 @@ The following features and tasks are not included in the 2/6/2015 release:
 
 ###1) System and Integration Testing - 
 The Teacher Hand Scoring System has not undergone a complete system testing or integration testing with the Test Integration System, System and integration testing will be complete (with the features identified above) as of the 02/23/2015 release.
+
+
+## Release Notes
+### 3/11/2015 
+*   Added ART_API returned  entities to cache,Modified the newtonsoft.json version in all the places
+*  Dependent Items 
+*  Various Bug Fixes
+*  Stored procedure changes for some bug fixes
+* Removed some unnecessary code,  removing district and school from table

@@ -8,69 +8,83 @@
   * http://www.smarterapp.org/documents/American_Institutes_for_Research_Open_Source_Software_License.pdf                                                                                                                                                 
   ******************************************************************************/ 
 */
-CREATE TABLE [dbo].[Assignments] (
-    [AssignmentID]   UNIQUEIDENTIFIER CONSTRAINT [DF__Assignmen__Assig__6501FCD8] DEFAULT (newid()) NOT NULL,
-    [SessionId]      NVARCHAR (240)   NOT NULL,
-    [OpportunityId]  BIGINT           NOT NULL,
-    [OpportunityKey] UNIQUEIDENTIFIER NOT NULL,
-    [ScoreStatus]    INT              NOT NULL,
-    [ScoreData]      NVARCHAR (MAX)   NULL,
-    [CallbackUrl]    NVARCHAR (MAX)   NULL,
-    [ClientName]     VARCHAR (100)    NULL,
-    [ResponseID]     UNIQUEIDENTIFIER NOT NULL,
-    [TeacherID]      VARCHAR (250)    NULL,
-    [SchoolID]       VARCHAR (100)    NULL,
-    [StudentID]      BIGINT           NULL,
-    [TestID]         VARCHAR (255)    NULL,
-    [DateCreated]    SMALLDATETIME    CONSTRAINT [DF__Assignmen__DateC__0539C240] DEFAULT (getutcdate()) NOT NULL,
-    CONSTRAINT [ix_pk_Assignments] PRIMARY KEY CLUSTERED ([AssignmentID] ASC),
-    CONSTRAINT [FK_Assignments_Students] FOREIGN KEY ([StudentID]) REFERENCES [dbo].[Students] ([StudentID]),
-    CONSTRAINT [FK_Assignments_Teachers] FOREIGN KEY ([TeacherID]) REFERENCES [dbo].[Teachers] ([TeacherID]),
-    CONSTRAINT [fk_item] FOREIGN KEY ([ResponseID]) REFERENCES [dbo].[Responses] ([ResponseID]),
-    CONSTRAINT [fk_school] FOREIGN KEY ([SchoolID]) REFERENCES [dbo].[Schools] ([SchoolID]),
-    CONSTRAINT [fk_test] FOREIGN KEY ([TestID]) REFERENCES [dbo].[Tests] ([TestID])
-);
-
 
 GO
-CREATE NONCLUSTERED INDEX [_ix_Assignments_TestIDTeachIDStatus]
-    ON [dbo].[Assignments]([TestID] ASC, [TeacherID] ASC, [ScoreStatus] ASC)
-    INCLUDE([AssignmentID], [ResponseID], [SchoolID], [SessionId], [StudentID]);
 
+/* Aaron  Added oppkey index   */
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+SET ANSI_PADDING ON
+GO
+
+CREATE TABLE [dbo].[Assignments](
+	[AssignmentID] [uniqueidentifier] NOT NULL,
+	[SessionId] [nvarchar](240) NOT NULL,
+	[OpportunityId] [bigint] NOT NULL,
+	[OpportunityKey] [uniqueidentifier] NOT NULL,
+	[ScoreStatus] [int] NOT NULL,
+	[ScoreData] [nvarchar](max) NULL,
+	[CallbackUrl] [nvarchar](max) NULL,
+	[ClientName] [varchar](100) NULL,
+	[ResponseID] [uniqueidentifier] NOT NULL,
+	[TeacherID] [varchar](250) NULL,
+	[StudentID] [bigint] NULL,
+	[TestID] [varchar](255) NULL,
+	[DateCreated] [smalldatetime] NOT NULL,
+ CONSTRAINT [ix_pk_Assignments] PRIMARY KEY CLUSTERED 
+(
+	[AssignmentID] ASC
+)WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
+) ON [PRIMARY]
 
 GO
-CREATE NONCLUSTERED INDEX [ix_Assignments_TeachIDStatus]
-    ON [dbo].[Assignments]([TeacherID] ASC, [ScoreStatus] ASC)
-    INCLUDE([AssignmentID], [ResponseID], [SchoolID], [SessionId], [StudentID], [TestID]);
-
-
+CREATE NONCLUSTERED INDEX [assignment_opkey_index] ON [dbo].[Assignments] 
+(
+	[OpportunityKey] ASC
+)WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
 GO
-CREATE STATISTICS [_dta_stat_1291151645_1_12]
-    ON [dbo].[Assignments]([AssignmentID], [StudentID]);
 
-
+SET ANSI_PADDING OFF
 GO
-CREATE STATISTICS [_dta_stat_1291151645_9_12_13]
-    ON [dbo].[Assignments]([ResponseID], [StudentID], [TestID]);
 
-
+ALTER TABLE [dbo].[Assignments]  WITH NOCHECK ADD  CONSTRAINT [FK_Assignments_Students] FOREIGN KEY([StudentID])
+REFERENCES [dbo].[Students] ([StudentID])
 GO
-CREATE STATISTICS [_dta_stat_1291151645_5_13_10]
-    ON [dbo].[Assignments]([ScoreStatus], [TestID], [TeacherID]);
 
-
+ALTER TABLE [dbo].[Assignments] CHECK CONSTRAINT [FK_Assignments_Students]
 GO
-CREATE STATISTICS [_dta_stat_1291151645_2_10]
-    ON [dbo].[Assignments]([SessionId], [TeacherID]);
 
-
+ALTER TABLE [dbo].[Assignments]  WITH NOCHECK ADD  CONSTRAINT [FK_Assignments_Teachers] FOREIGN KEY([TeacherID])
+REFERENCES [dbo].[Teachers] ([TeacherID])
 GO
-CREATE STATISTICS [_dta_stat_1291151645_2_13]
-    ON [dbo].[Assignments]([SessionId], [TestID]);
 
-
+ALTER TABLE [dbo].[Assignments] CHECK CONSTRAINT [FK_Assignments_Teachers]
 GO
-CREATE STATISTICS [_dta_stat_1291151645_13_2]
-    ON [dbo].[Assignments]([TestID], [SessionId]);
+
+ALTER TABLE [dbo].[Assignments]  WITH NOCHECK ADD  CONSTRAINT [fk_item] FOREIGN KEY([ResponseID])
+REFERENCES [dbo].[Responses] ([ResponseID])
+ON DELETE CASCADE
+GO
+
+ALTER TABLE [dbo].[Assignments] CHECK CONSTRAINT [fk_item]
+GO
+
+ALTER TABLE [dbo].[Assignments]  WITH NOCHECK ADD  CONSTRAINT [fk_test] FOREIGN KEY([TestID])
+REFERENCES [dbo].[Tests] ([TestID])
+GO
+
+ALTER TABLE [dbo].[Assignments] CHECK CONSTRAINT [fk_test]
+GO
+
+ALTER TABLE [dbo].[Assignments] ADD  CONSTRAINT [DF__Assignmen__Assig]  DEFAULT (newsequentialid()) FOR [AssignmentID]
+GO
+
+ALTER TABLE [dbo].[Assignments] ADD  CONSTRAINT [DF__Assignmen__DateC__0539C240]  DEFAULT (getutcdate()) FOR [DateCreated]
+GO
+
 
 

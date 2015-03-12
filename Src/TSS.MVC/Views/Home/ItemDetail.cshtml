@@ -85,6 +85,7 @@
                 updateItemSet(id);
                 $('#content').html(resp);
                 window.loadBlackbox();
+                $('#responseFrame').attr("src", $('#responseFrame').attr("src"));
             }).fail(function (resp) {
                 console.log(resp);
                 alert("Unable to load item.");
@@ -149,15 +150,19 @@
 
         // Previous Clicked
         $("#previousButton").click(function (e) {
-            if( ! $("#previousButton").attr("disabled")){
-                window.location.href = "/Home/ItemDetail/" + prevAssignmentId;
+            if (!$("#previousButton").attr("disabled")) {
+                e.preventDefault();
+                loadItem(prevAssignmentId);
+                window.history.replaceState({ url: "/Home/ItemDetail/" + prevAssignmentId }, '', "/Home/ItemDetail/" + prevAssignmentId);
             }
         });
 
         // Next Clicked 
         $("#nextButton").click(function (e) {
-            if( ! $("#nextButton").attr("disabled")){
-                window.location.href = "/Home/ItemDetail/" + nextAssignmentId;
+            if (!$("#nextButton").attr("disabled")) {
+                e.preventDefault();
+                loadItem(nextAssignmentId);
+                window.history.replaceState({ url: "/Home/ItemDetail/" + nextAssignmentId }, '', "/Home/ItemDetail/" + nextAssignmentId);
             }
         });
 

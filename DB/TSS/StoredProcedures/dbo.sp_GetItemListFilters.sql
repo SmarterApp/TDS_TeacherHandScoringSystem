@@ -8,7 +8,6 @@
   * http://www.smarterapp.org/documents/American_Institutes_for_Research_Open_Source_Software_License.pdf                                                                                                                                                 
   ******************************************************************************/ 
 */
-
 /*
 	Description: RETURNS A SINGLE LIST OF DISTINCT VALUES FOR EACH FILTER
 	EXAMPLE: sp_GetItemListFilters @emailist = 'ownitemscorer01@example.com|ownitemscorer01@example.com'
@@ -41,13 +40,15 @@ BEGIN
 
 
 	SELECT t.Grade,t.[Subject], t.TestID, t.Name TestName, st.sessionid  SessionId, st.Name AssignedTo, st.TeacherID
-	FROM dbo.Tests t 
+	FROM dbo.Tests t (NOLOCK)
 		JOIN 
 			( SELECT DISTINCT a.SessionID, a.TestID, te.Name, te.TeacherID
-			  FROM dbo.Assignments a
-				JOIN dbo.Teachers te ON a.TeacherId = te.TeacherID
-				JOIN #TeacherList tl ON tl.TeacherID = a.TeacherID
-			  WHERE a.ScoreStatus in (0, 1)
+			  FROM dbo.Assignments a (NOLOCK)
+			    INNER JOIN dbo.Responses r (NOLOCK) ON a.ResponseID = r.ResponseID
+			    INNER JOIN dbo.Items i (NOLOCK) ON r.BankKey = i.BankKey AND r.ItemKey = i.ItemKey 
+				INNER JOIN dbo.Teachers te (NOLOCK) ON a.TeacherId = te.TeacherID
+				INNER JOIN #TeacherList tl (NOLOCK) ON tl.TeacherID = a.TeacherID
+			  WHERE a.ScoreStatus < 2 AND (i.HandScored = 1 OR i.HandScored IS NULL)
 			) st 
 		ON t.TestID = st.testid 
 	
