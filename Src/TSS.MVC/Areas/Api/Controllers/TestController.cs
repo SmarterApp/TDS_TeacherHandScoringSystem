@@ -1,14 +1,4 @@
-#region License
-// /*******************************************************************************                                                                                                                                    
-//  * Educational Online Test Delivery System                                                                                                                                                                       
-//  * Copyright (c) 2014 American Institutes for Research                                                                                                                                                              
-//  *                                                                                                                                                                                                                  
-//  * Distributed under the AIR Open Source License, Version 1.0                                                                                                                                                       
-//  * See accompanying file AIR-License-1_0.txt or at                                                                                                                                                                  
-//  * http://www.smarterapp.org/documents/American_Institutes_for_Research_Open_Source_Software_License.pdf                                                                                                                                                 
-//  ******************************************************************************/ 
-#endregion
-#region License
+﻿#region License
 // /*******************************************************************************                                                                                                                                    
 //  * Educational Online Test Delivery System                                                                                                                                                                       
 //  * Copyright (c) 2014 American Institutes for Research                                                                                                                                                              
@@ -56,12 +46,11 @@ namespace TSS.MVC.Areas.Api.Controllers
             var apiResult = new TestSubmitApiResultModel();
             if (Request.Files.Count > 0)
             {
+                var fileResult = new TestSubmitApiResultFileModel();
                 try
                 {
-
                     foreach (string fileName in Request.Files)
-                    {
-                        var fileResult = new TestSubmitApiResultFileModel();
+                    {                        
                         fileResult.Success = false;
 
                         HttpPostedFileBase file = Request.Files[fileName];
@@ -80,6 +69,7 @@ namespace TSS.MVC.Areas.Api.Controllers
 
                             //log all xml requests to database if the site is running under debug mode.
                             if (HttpContext.IsDebuggingEnabled)
+                            {
                                 LoggerRepository.SaveLog(new Log
                                                              {
                                                                  Category = LogCategory.Application,
@@ -87,10 +77,11 @@ namespace TSS.MVC.Areas.Api.Controllers
                                                                  Message = string.Format("/api/test/submit"),
                                                                  Details = file.FileName + ":" + doc.OuterXml
                                                              });
+                            }
 
                             string xsdPath = Server.MapPath("~/App_Data/reportxml_os.xsd");
                             string errorString = Helpers.SchemaHelper.Validate(xsdPath, doc);
-                            string valdiationOutput = string.IsNullOrEmpty(errorString)
+                            string validationOutput = string.IsNullOrEmpty(errorString)
                                                           ? String.Empty
                                                           : " File is not in a correct format. Validation Error:" +
                                                             errorString;
@@ -115,6 +106,7 @@ namespace TSS.MVC.Areas.Api.Controllers
                                 {
                                     fileResult.ErrorMessage = "There was an error processing the file. " + ex.Message +
                                                               ex.StackTrace;
+                                    fileResult.Success = false;
 
                                     LoggerRepository.SaveLog(new Log
                                                                  {
@@ -122,33 +114,45 @@ namespace TSS.MVC.Areas.Api.Controllers
                                                                      Level = LogLevel.Error,
                                                                      Message = string.Format("/api/test/submit"),
                                                                      Details = fileResult.ErrorMessage
-                                                                 });
+                                                                 },true);
                                 }
                             }
                             else
                             {
                                 // if validation fails, then log the validation error and proceed with next request
-                                fileResult.ErrorMessage = valdiationOutput;
+                                fileResult.ErrorMessage = validationOutput;
+                                fileResult.Success = false;
                                 LoggerRepository.SaveLog(new Log
                                                              {
                                                                  Category = LogCategory.Application,
                                                                  Level = LogLevel.Error,
                                                                  Message = string.Format("/api/test/submit"),
                                                                  Details = fileResult.ErrorMessage
-                                                             });
+                                                             },true);
                             }
                         }
-                        else
+                        else// end of file null or file content empty
                         {
+                            fileResult.Success = false;
                             fileResult.ErrorMessage = "Error Code: 1002 Message: File does not contain any data.";
+                            LoggerRepository.SaveLog(new Log
+                            {
+                                Category = LogCategory.Application,
+                                Level = LogLevel.Error,
+                                Message = string.Format("/api/test/submit"),
+                                Details = fileResult.ErrorMessage
+                            }, true);
                         }
-                        apiResult.Files.Add(fileResult);
+                        
                     }
                 }
                 catch (Exception exp)
                 {
-                    LoggerRepository.LogException(exp);
+                    fileResult.ErrorMessage =  exp.Message + exp.StackTrace;
+                    fileResult.Success = false;
+                    LoggerRepository.LogException(exp,exp.StackTrace);
                 }
+                apiResult.Files.Add(fileResult);
             }
             return Json(apiResult);
         }
@@ -219,7 +223,13 @@ namespace TSS.MVC.Areas.Api.Controllers
                 xmlWriter.WriteEndElement();//end of root node
                 xmlWriter.Close();
             }
-            _testRepository.BatchProcessAssingmentAndResponse(xmlInputs.ToString(), district.DistrictID);
+            bool fail = _testRepository.BatchProcessAssingmentAndResponse(xmlInputs.ToString(), district.DistrictID);
+            if (fail)
+            {
+                string failure = "SQL Error when processing test assignments and responses on: ";
+                failure = failure + xmlInputs.ToString();
+                throw new Exception(failure);
+            }
         }
 
         // api/test/successresponse - xml
@@ -230,4 +240,3 @@ namespace TSS.MVC.Areas.Api.Controllers
         }
     }
 }
-

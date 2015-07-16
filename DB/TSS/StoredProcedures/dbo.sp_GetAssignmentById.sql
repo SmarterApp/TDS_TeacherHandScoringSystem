@@ -1,4 +1,4 @@
-/*
+﻿/*
  /*******************************************************************************                                                                                                                                    
   * Educational Online Test Delivery System                                                                                                                                                                       
   * Copyright (c) 2014 American Institutes for Research                                                                                                                                                              
@@ -57,4 +57,3 @@ BEGIN
 	EXEC dbo.sp_WritedbLatency 'dbo.sp_GetAssignmentById', @StartDate, @EndDate
 	
 END
-

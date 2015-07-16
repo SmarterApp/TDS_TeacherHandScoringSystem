@@ -1,14 +1,4 @@
-#region License
-// /*******************************************************************************                                                                                                                                    
-//  * Educational Online Test Delivery System                                                                                                                                                                       
-//  * Copyright (c) 2014 American Institutes for Research                                                                                                                                                              
-//  *                                                                                                                                                                                                                  
-//  * Distributed under the AIR Open Source License, Version 1.0                                                                                                                                                       
-//  * See accompanying file AIR-License-1_0.txt or at                                                                                                                                                                  
-//  * http://www.smarterapp.org/documents/American_Institutes_for_Research_Open_Source_Software_License.pdf                                                                                                                                                 
-//  ******************************************************************************/ 
-#endregion
-#region License
+﻿#region License
 // /*******************************************************************************                                                                                                                                    
 //  * Educational Online Test Delivery System                                                                                                                                                                       
 //  * Copyright (c) 2014 American Institutes for Research                                                                                                                                                              
@@ -31,11 +21,14 @@ using TSS.Domain.DataModel;
 using TSS.MVC.Areas.Api.Models;
 using TSS.Services;
 using TSS.Data.DataDistribution;
+using System.Net;
+using TSS.MVC.Controllers;
 
 namespace TSS.MVC.Areas.Api.Controllers
 {
-    public class ItemController : Controller
+    public class ItemController : BaseController
     {
+
         private readonly IStudentResponseService _studentResponseService;
 
         public ItemController(IStudentResponseService studentResponseService)
@@ -63,7 +56,7 @@ namespace TSS.MVC.Areas.Api.Controllers
             }
             catch (Exception exp)
             {
-                LoggerRepository.LogException(exp);
+                LoggerRepository.LogException(exp, "api/Item/Get/Id", "Getting Assignment by Id Failed");
             }
             return Json(apiResult, JsonRequestBehavior.AllowGet);
         }
@@ -92,8 +85,8 @@ namespace TSS.MVC.Areas.Api.Controllers
         [System.Web.Mvc.HttpPost]
         public ActionResult GetAssignedItems(AssignedItemsQuery query)
         {
-            List<string> assignments = new List<string>();
-            query.UserUUID = UserAttributes.SAML.TSSUserID;
+            UserAttributes ua = new UserAttributes();
+            query.UserUUID = ua.TSSUserID;
 
             // User ID list is really just this user, used to get row count.
             AssignmentPage page = _studentResponseService.GetSortedAssignmentIds(query);
@@ -105,9 +98,11 @@ namespace TSS.MVC.Areas.Api.Controllers
         public ActionResult List(AssignedItemsQuery query)
         {
             try
-            {           
-                query.UserUUID = UserAttributes.SAML.TSSUserID;
-                query.teacherUUIDs = UserAttributes.TeacherUUIDListCache;
+            {
+                //throw new Exception("Test");
+                UserAttributes ua = new UserAttributes();
+                query.UserUUID = ua.TSSUserID;
+                query.teacherUUIDs = ua.TeacherUUIDListCache; 
                 var assignmentPage = _studentResponseService.GetAssignmentsByAssignedToTeacherIDList(query);
                 var assignmentList = assignmentPage.Assignments.ToList();
                 var apiResult = new StudentItemsApiResultModel(assignmentPage);
@@ -132,7 +127,7 @@ namespace TSS.MVC.Areas.Api.Controllers
                                       StudentName = assignment.StudentName,
                                       CanScore =
                                           (String.Equals(assignment.TeacherId.Trim(),
-                                                         UserAttributes.SAML.TSSUserID.Trim(),
+                                                         ua.TSSUserID.Trim(),
                                                          StringComparison.CurrentCultureIgnoreCase)),
                                       TeacherId = assignment.TeacherId.ToString()
                                   };
@@ -145,20 +140,25 @@ namespace TSS.MVC.Areas.Api.Controllers
             }
             catch (Exception exp)
             {
-                LoggerRepository.LogException(exp);
-                if (Session["SAMLResponse"] == null)
+                LoggerRepository.LogException(exp, "/api/ItemList");
+                if (Request.Cookies.Get("TSS-MAIL") == null)
                 {
                     Response.StatusCode = (int)System.Net.HttpStatusCode.Unauthorized;
+                    return Json("", JsonRequestBehavior.AllowGet);
                 }
-                else
-                {
-                    // what to return?
-                    var jsonResult = Json(new StudentItemsApiResultModel(new AssignmentPage()), JsonRequestBehavior.AllowGet);
-                    jsonResult.MaxJsonLength = int.MaxValue;
-                    return jsonResult;
-                }
+                //else
+                //{
+                //    // what to return?
+                //    var jsonResult = Json(new StudentItemsApiResultModel(new AssignmentPage()), JsonRequestBehavior.AllowGet);
+                //    jsonResult.MaxJsonLength = int.MaxValue;
+                //    return jsonResult;
+                //}
 
-                return Json("", JsonRequestBehavior.AllowGet);
+                Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                Response.StatusDescription = HttpStatusCode.InternalServerError.ToString();
+                return View("Error", new HandleErrorInfo(exp, "Item", "List"));
+
+                //return Json("", JsonRequestBehavior.AllowGet);
             }
         }
 
@@ -264,7 +264,7 @@ namespace TSS.MVC.Areas.Api.Controllers
                         catch (Exception ex)
                         {
                             fileResult.ErrorMessage = ex.Message;
-                            LoggerRepository.LogException(ex);
+                            LoggerRepository.LogException(ex, "Item Json parsing failed");
                         }
 
                         fileResult.Success = true;
@@ -276,6 +276,10 @@ namespace TSS.MVC.Areas.Api.Controllers
 
                     apiResult.Files.Add(fileResult);
                 }
+            }
+            else
+            {
+                LoggerRepository.LogException(null, "No File Found for Item data Importing into the Database");
             }
             try
             {
@@ -289,4 +293,3 @@ namespace TSS.MVC.Areas.Api.Controllers
         }
     }
 }
-

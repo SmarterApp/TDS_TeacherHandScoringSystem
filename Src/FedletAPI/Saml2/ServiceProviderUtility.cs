@@ -2357,8 +2357,8 @@ namespace Sun.Identity.Saml2
 
                 if (!String.IsNullOrEmpty(idpDeployment) && !String.IsNullOrEmpty(idpMetaAlias))
                 {
-                    string idpUrlFormat = "{0}/IDPSloInit?metaAlias={1}&binding={2}&RelayState={3}";
-
+                    //string idpUrlFormat = "{0}/IDPSloInit?metaAlias={1}&binding={2}&RelayState={3}";
+                    string idpUrlFormat = "{0}/IDPSloInit/metaAlias/air{1}?binding={2}&RelayState={3}";
 //                    idpUrl = idpDeployment + "/IDPSloInit?metaAlias=" + "idpMetaAlias" + "&binding=" +Saml2Constants.HttpRedirectProtocolBinding + "&RelayState=" + portalURL;
 //                    idpUrl = HttpUtility.HtmlEncode(idpUrl);
                     idpUrl = (String.Format(idpUrlFormat, idpDeployment, idpMetaAlias, Saml2Constants.HttpRedirectProtocolBinding, portalURL));

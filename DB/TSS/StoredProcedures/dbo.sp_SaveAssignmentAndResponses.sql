@@ -8,7 +8,7 @@
   * http://www.smarterapp.org/documents/American_Institutes_for_Research_Open_Source_Software_License.pdf                                                                                                                                                 
   ******************************************************************************/ 
 */
-USE [TSS_Debug_1]
+
 GO
 SET ANSI_NULLS ON
 GO
@@ -25,6 +25,7 @@ GO
 	Scored = 2
 	
 	DATE: 3/6/2015 - Aaron added dependent items handling
+	3/17/15 - Added some refactoring in deadlock investigation.  Cover whole thing in transaction
   	
 */
             
@@ -93,7 +94,7 @@ BEGIN
           resp.ItemKey
         , resp.BankKey
         from #ResponseList resp
-    join dbo.Items itm on itm.BankKey=resp.BankKey and itm.ItemKey=resp.ItemKey and itm.HandScored = 0
+    join dbo.Items itm (NOLOCK) on itm.BankKey=resp.BankKey and itm.ItemKey=resp.ItemKey and itm.HandScored = 0
     
     -- Force machine-scored items to be scored so teachers can't score them
     Update resp SET ScoreStatus=2 from #ResponseList resp 
@@ -101,7 +102,7 @@ BEGIN
     
 	-- check if the response data is already loaded
 	-- set the flag to 0 if rows does not exists, 1 if row exists
-	  SET @RespFlag = (CASE WHEN exists (SELECT 1 from Assignments where OpportunityKey=@oppKey)
+	  SET @RespFlag = (CASE WHEN exists (SELECT 1 from Assignments (NOLOCK) where OpportunityKey=@oppKey)
 							THEN 1
 							ELSE 0 END)											   
 							
@@ -115,76 +116,25 @@ BEGIN
 		EXEC dbo.sp_WritedbLatency 'dbo.sp_SaveAssignmentAndResponses', @StartDate, @EndDate, 'SP exited conditionally. Response data already exists.'
 		RETURN		
 	END	
-
+    
+    -- insert into dbo.AaronXmlDbg select @xmlInputs (uncomment for debugging)
 
 	-- USE CASE#2: check if data already exists in the database
 	-- @RespFlag = 0 indicates record does not exist. Insert data into the appropriate tables
-	IF @RespFlag = 0
-	BEGIN
 	BEGIN TRANSACTION	
 	BEGIN TRY
-		--PRINT 'USE CASE#2'
-		
-		INSERT INTO [dbo].[Responses]
-			   ([ResponseID]
-			   ,[BankKey]
-			   ,[ContentLevel]
-			   ,[Format]
-			   ,[ItemKey]
-			   ,[Response]
-			   ,[ResponseDate]
-			   ,[SegmentId])
-		SELECT ResponseID
-			 , BankKey
-			 , ContentLevel
-			 , Format
-			 , ItemKey
-			 , Response
-			 , ResponseDate
-			 , SegmentId
-		FROM #ResponseList 
-		
-				
-		INSERT INTO [dbo].[Assignments]
-			   ([SessionId]
-			   ,[OpportunityId]
-			   ,[OpportunityKey]
-			   ,[ScoreStatus]
-			   ,[CallbackUrl]
-			   ,[ClientName]
-			   ,[ResponseID]
-			   ,[TeacherID]		
-			   ,[StudentID]
-			   ,[TestID])
-		SELECT SessionId
-			 , OpportunityId
-			 , OpportunityKey
-			 , ScoreStatus
-			 , CallbackUrl
-			 , ClientName
-			 , r.ResponseID
-			 , TeacherID			
-			 , StudentID
-			 , TestID
-		FROM #Assignment a, #ResponseList r		
-				
-	END TRY
-	BEGIN CATCH
-		ROLLBACK
-		SET @Err = ERROR_MESSAGE()
-		SET @ErrorFlag = 1
-		EXEC dbo.sp_WritedbLatency 'dbo.sp_SaveAssignmentAndResponses', @StartDate, @EndDate, @Err
-		RETURN
-	END CATCH			
-	COMMIT TRANSACTION
-	END								
-
 	
+	--PRINT 'USE CASE#2'
+	-- IF @RespFlag = 1
+	-- #responseList and #assignmentList already contain the correct values, so we defer the 
+	-- commit to the last step to avoid deadlock.
+	IF @RespFlag = 1
+	BEGIN
+		
 	-- USE CASE#3: check if data already exists in the database and the scoreStatus for each of the responses	
 	-- If scoreStatus for a given response is 'Scored' => update response and scoreStatus data
 	-- If scoreStatus for a given response is NOT 'Scored' => update only response data
-	IF @RespFlag = 1
-	BEGIN
+	-- BEGIN
 		--PRINT 'USE CASE#3'
 		
 		DECLARE @UpdateToResponseData TABLE (
@@ -219,7 +169,7 @@ BEGIN
 		UPDATE r
 		SET Response = u.New_Response
 		  , ResponseDate = u.New_ResponseDate
-		FROM dbo.Responses r
+		FROM dbo.Responses r 
 			JOIN @UpdateToResponseData u ON u.ResponseID = r.ResponseID
 		WHERE u.HasRespChanged = 1	
 			
@@ -228,7 +178,7 @@ BEGIN
 		UPDATE a
 		SET ScoreStatus = 0 --NOT SCORED
 		  , ScoreData   = NULL 
-		FROM dbo.Assignments a
+		FROM dbo.Assignments a 
 			JOIN @UpdateToResponseData u ON u.AssignmentID = a.AssignmentID
 		WHERE a.ScoreStatus = 2  --SCORED
 			AND u.HasRespChanged = 1 and u.MachineScored = 0
@@ -240,15 +190,20 @@ BEGIN
 		FROM dbo.Assignments a
 			JOIN @UpdateToResponseData u ON u.AssignmentID = a.AssignmentID
 		WHERE u.MachineScored = 1
-			
+		
+		declare @oppsToDelete table (assignmentID uniqueidentifier,responseID uniqueidentifier)
+		
         -- If we are importing dependent items that were not imported on a previous run, 
         -- there may be some responses that are not in the table yet.  Otherwise the 
         -- logic above added them and we can forget about them
         delete resp from #responseList rlist 
-        JOIN Assignments assign ON assign.OpportunityKey=@oppKey
-        join Responses resp on resp.ResponseID=assign.ResponseID
+        JOIN Assignments assign (NOLOCK) ON assign.OpportunityKey=@oppKey
+        join Responses resp (NOLOCK) on resp.ResponseID=assign.ResponseID
         where resp.BankKey = rlist.BankKey and resp.ItemKey=rlist.ItemKey                
         				
+    END   -- If respFlag == 1     				
+    
+    -- We have updated any records, and what is left are adds.  Insert response first to get responseID
 	INSERT INTO [dbo].[Responses]
 			   ([ResponseID]
 			   ,[BankKey]
@@ -269,7 +224,7 @@ BEGIN
 		FROM #ResponseList 
 		
 				
-		INSERT INTO [dbo].[Assignments]
+	INSERT INTO [dbo].[Assignments]
 			   ([SessionId]
 			   ,[OpportunityId]
 			   ,[OpportunityKey]
@@ -290,21 +245,28 @@ BEGIN
 			 , TeacherID			
 			 , StudentID
 			 , TestID
-		FROM #Assignment a, #ResponseList r		
-				
-	END
-
+		FROM #Assignment a, #ResponseList r						
 			
 	-- clean-up
 	DROP TABLE #Assignment;
 	DROP TABLE #ResponseList;
 	EXEC sp_xml_removedocument @hDoc;
 
-	SELECT @ErrorFlag -- 0 indicates success; 1 indicates failure
-	
 	-- latency logging
 	SET @EndDate = GETDATE()	
+	-- Removed comment on successful entry, makes it easier to correlate to log fails.
 	EXEC dbo.sp_WritedbLatency 'dbo.sp_SaveAssignmentAndResponses', @StartDate, @EndDate
-		           
+	END TRY
+	BEGIN CATCH
+    	SET @EndDate = GETDATE()	
+		ROLLBACK
+		SET @Err = ERROR_MESSAGE()
+		SET @ErrorFlag = 1
+		EXEC dbo.sp_WritedbLatency 'dbo.sp_SaveAssignmentAndResponses', @StartDate, @EndDate, @Err
+		RETURN
+	END CATCH			
+	COMMIT TRANSACTION
+	SELECT @ErrorFlag -- 0 indicates success; 1 indicates failure
+	
 END
 

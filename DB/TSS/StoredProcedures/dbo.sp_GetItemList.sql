@@ -1,4 +1,4 @@
-/*
+﻿/*
  /*******************************************************************************                                                                                                                                    
   * Educational Online Test Delivery System                                                                                                                                                                       
   * Copyright (c) 2014 American Institutes for Research                                                                                                                                                              
@@ -142,8 +142,8 @@ BEGIN
 						  AND (i.HandScored = 1 OR i.HandScored is NULL) 		--should only return hand scorable items
 						  --01.13.2015: This filter is no longer needed. Bcoz Assignments are only created for handscored items. 
 				  ) AS RESULTSET 
-				WHERE ROWNUM >= @StartRow 
-					AND ROWNUM < @EndRow 
+				WHERE ROWNUM > @StartRow 
+					AND ROWNUM <= @EndRow 
 				ORDER BY ' + @SortColumn ;
 				
 	--PRINT @SQL
@@ -171,4 +171,3 @@ BEGIN
 	EXEC dbo.sp_WritedbLatency 'dbo.sp_GetItemList', @StartDate, @EndDate
 	
 END
-

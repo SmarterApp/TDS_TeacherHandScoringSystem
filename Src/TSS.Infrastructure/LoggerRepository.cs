@@ -1,14 +1,4 @@
-#region License
-// /*******************************************************************************                                                                                                                                    
-//  * Educational Online Test Delivery System                                                                                                                                                                       
-//  * Copyright (c) 2014 American Institutes for Research                                                                                                                                                              
-//  *                                                                                                                                                                                                                  
-//  * Distributed under the AIR Open Source License, Version 1.0                                                                                                                                                       
-//  * See accompanying file AIR-License-1_0.txt or at                                                                                                                                                                  
-//  * http://www.smarterapp.org/documents/American_Institutes_for_Research_Open_Source_Software_License.pdf                                                                                                                                                 
-//  ******************************************************************************/ 
-#endregion
-#region License
+﻿#region License
 // /*******************************************************************************                                                                                                                                    
 //  * Educational Online Test Delivery System                                                                                                                                                                       
 //  * Copyright (c) 2014 American Institutes for Research                                                                                                                                                              
@@ -26,6 +16,7 @@ using System.Web;
 using TSS.Data.Sql;
 using TSS.Domain.DataModel;
 using TSS.Data.DataDistribution;
+using System.Diagnostics;
 
 namespace TSS.Data
 {
@@ -60,16 +51,37 @@ namespace TSS.Data
         {
         }
 
-        public static void SaveLog(Log log)
+        /// <summary>
+        /// Save a log to db.  If isError is set, we write it to (error)Log, else activity log
+        /// </summary>
+        /// <param name="log"></param>
+        /// <param name="isError">If true, logs to error table, else activity table</param>
+        public static void SaveLog(Log log,bool isError=false)
         {
-            SqlCommand command = Instance.CreateCommand(CommandType.StoredProcedure, "dbo.sp_SaveLog");
-            command.AddValue("Category", log.Category);
-            command.AddValue("Details", log.Details);
-            command.AddValue("IpAddress", log.IpAddress);
-            command.AddValue("Level", log.Level);
-            command.AddValue("LogDate", log.LogDate);
-            command.AddValue("Message", log.Message);
-            Instance.ExecuteNonQuery(command);
+            try
+            {
+                string sproc = "dbo.sp_SaveActivityLog";
+                if (isError)
+                {
+                    sproc = "dbo.sp_SaveLog";
+                }
+                SqlCommand command = Instance.CreateCommand(CommandType.StoredProcedure,sproc);
+                command.AddValue("Category", log.Category);
+                command.AddValue("Details", log.Details);
+                command.AddValue("Level", log.Level);
+                command.AddValue("IpAddress",
+                                 HttpContext.Current.Request.ServerVariables["REMOTE_ADDR"]);
+                command.AddValue("LogDate", log.LogDate);
+                command.AddValue("Message", log.Message);
+                Instance.ExecuteNonQuery(command);
+            }
+            catch (Exception e)
+            {
+                // If we can't log for some reason, silently fail.  If we throw another exception here
+                // it will loop-d-loop.
+                // EventLog.WriteEntry("THSS", e.Message + ":"+ e.StackTrace,EventLogEntryType.Error);
+                System.Diagnostics.Debug.WriteLine("THSS " +  e.Message + ":" + e.StackTrace);
+            }
         }
 
         /// <summary>
@@ -101,13 +113,12 @@ namespace TSS.Data
 
             Log log = new Log();
             log.Category = LogCategory.Security;
-            log.IpAddress = ip;
             log.Level = LogLevel.Error;
             log.LogDate = DateTime.Now;
+            log.IpAddress = ip;
             log.Message = message;
             log.Details = details;
-            SaveLog(log);
+            SaveLog(log,true);
         }
     }
 }
-

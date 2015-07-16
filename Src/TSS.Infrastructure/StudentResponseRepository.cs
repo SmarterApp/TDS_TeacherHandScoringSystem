@@ -1,14 +1,4 @@
-#region License
-// /*******************************************************************************                                                                                                                                    
-//  * Educational Online Test Delivery System                                                                                                                                                                       
-//  * Copyright (c) 2014 American Institutes for Research                                                                                                                                                              
-//  *                                                                                                                                                                                                                  
-//  * Distributed under the AIR Open Source License, Version 1.0                                                                                                                                                       
-//  * See accompanying file AIR-License-1_0.txt or at                                                                                                                                                                  
-//  * http://www.smarterapp.org/documents/American_Institutes_for_Research_Open_Source_Software_License.pdf                                                                                                                                                 
-//  ******************************************************************************/ 
-#endregion
-#region License
+﻿#region License
 // /*******************************************************************************                                                                                                                                    
 //  * Educational Online Test Delivery System                                                                                                                                                                       
 //  * Copyright (c) 2014 American Institutes for Research                                                                                                                                                              
@@ -24,19 +14,12 @@ using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
-
-using System.Text;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
-
+using System.Text.RegularExpressions;
 using TSS.Data.Sql;
 
 using TSS.Domain;
 using TSS.Domain.DataModel;
-using TSS.Data;
 
-using TSS.Data;
-using TSS.Data.DataDistribution;
 
 
 namespace TSS.Data
@@ -67,23 +50,13 @@ namespace TSS.Data
 
                 if (ConfigurationManager.AppSettings["debug.logsql"] == "true")
                 {
-                    SqlCommand lcmd = CreateCommand(CommandType.StoredProcedure, "dbo.sp_SaveLog");
                     Log log = new Log();
                     log.Category = LogCategory.Application;
                     log.Level = LogLevel.Debug;
-                    log.IpAddress = "NA";
                     log.LogDate = DateTime.UtcNow;
                     log.Details = output;
                     log.Message = "Sproc";
-
-                    // Todo - fix log repository to be more public
-                    lcmd.AddValue("Category", log.Category);
-                    lcmd.AddValue("Details", log.Details);
-                    lcmd.AddValue("IpAddress", log.IpAddress);
-                    lcmd.AddValue("Level", log.Level);
-                    lcmd.AddValue("LogDate", log.LogDate);
-                    lcmd.AddValue("Message", log.Message);
-                    ExecuteNonQuery(lcmd);
+                    LoggerRepository.SaveLog(log);
                 }
             }
         }
@@ -153,7 +126,7 @@ namespace TSS.Data
                     ItemGroupEntry entry = new ItemGroupEntry();
                     entry.BankKey = reader.GetInt32("BankKey");
                     entry.ItemKey = reader.GetInt32("ItemKey");
-                    entry.Response = reader.GetString("Response");
+                    entry.Response = Regex.Replace(reader.GetString("Response"), @"\t|\n|\r", "").Replace("\"", "&quot;").Replace("\'", "&#39;");
                     rv.Add(entry);
                 }
             });
@@ -494,4 +467,3 @@ namespace TSS.Data
         #endregion
     }
 }
-

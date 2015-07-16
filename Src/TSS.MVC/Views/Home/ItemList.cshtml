@@ -7,9 +7,10 @@
 @{
     ViewBag.Title = "Response List";
     Layout = "~/Views/Shared/_Layout.cshtml";
-    ViewBag.TenancyList = TSS.MVC.UserAttributes.SAML.TenancyChainList;
-    ViewBag.ActiveDistrict = TSS.MVC.UserAttributes.SAML.ActiveDistrictId;
-    ViewBag.Loginuser = TSS.MVC.UserAttributes.SAML.TSSUserID;
+    UserAttributes ua = new UserAttributes();
+    ViewBag.TenancyList = ua.TenancyChainList;
+    ViewBag.ActiveDistrict = ua.ActiveDistrictId;
+    ViewBag.Loginuser = ua.TSSUserID;
 }
 
 <div id="dialog-reassign" title="Reassign Selected Students">
@@ -488,328 +489,394 @@
     };
 
     $(document).ready(function () {
+        try{
+            if (window.location.href.indexOf("?loadfromstorage") == -1)
+                TSS.Common.clearStorage();
 
-        if (window.location.href.indexOf("?loadfromstorage") == -1)
-            TSS.Common.clearStorage();
-
-        //Drawa Data Table
-        var RefreshDataTable = function () {
-            drawTable2();
-        };
+            //Drawa Data Table
+            var RefreshDataTable = function () {
+                drawTable2();
+            };
 
 
-        //call to draw data table
-        RefreshDataTable();
-        //format dropdowns
-        $('.chosen-select').chosen({});
-        $('.chzn-container').css({ "width": "150px" });
-        $('.chzn-drop').css({ "width": "148px" });
-        $('.chzn-search > input').css({ "width": "135px" });
-        //Mark Complete Drop Down
-        var completeDialog = $("#dialog-complete").dialog({
-            resizable: false,
-            height: 200,
-            width: 450,
-            modal: true,
-            autoOpen: false,
-            dialogClass: 'dlgfixed',
-            position: "center",
-            overlay: { display: 'none', opacity: 0 },
-            buttons: {
-                "Mark Selected as Complete": function () {
-                    //Save
-                    MarkItems();
-                    //Close
-                    $(this).dialog("close");
-                },
-                Cancel: function () {
-                    $(this).dialog("close");
-                }
-            },
-            open: function () {
-
-            }
-        });
-
-        var completefailed = $("#invalidlogin").dialog({
-            resizable: false,
-            height: 200,
-            width: 250,
-            modal: true,
-            autoOpen: false,
-            buttons: {
-                "OK": function () {
-                    //Close
-                    $(this).dialog("close");
-                }
-            }
-        });
-
-        var reassignComplete = $("#reassign-complete").dialog({
-            resizable: false,
-            height: 150,
-            width: '450px',
-            modal: true,
-            autoOpen: false,
-            buttons: {
-                "Reassign": function () {
-                    if (ReassignItems()) {
+            //call to draw data table
+            RefreshDataTable();
+            //format dropdowns
+            $('.chosen-select').chosen({});
+            $('.chzn-container').css({ "width": "150px" });
+            $('.chzn-drop').css({ "width": "148px" });
+            $('.chzn-search > input').css({ "width": "135px" });
+            //Mark Complete Drop Down
+            var completeDialog = $("#dialog-complete").dialog({
+                resizable: false,
+                height: 200,
+                width: 450,
+                modal: true,
+                autoOpen: false,
+                dialogClass: 'dlgfixed',
+                position: "center",
+                overlay: { display: 'none', opacity: 0 },
+                buttons: {
+                    "Mark Selected as Complete": function () {
+                        //Save
+                        MarkItems();
+                        //Close
+                        $(this).dialog("close");
+                    },
+                    Cancel: function () {
                         $(this).dialog("close");
                     }
                 },
-                Cancel: function () {
-                    $(this).dialog("close");
-                }
-            }
-        });
+                open: function () {
 
-        //Reassign Dialog
-        var reassignDialog = $("#dialog-reassign").dialog({
-            resizable: false,
-            height: 350,
-            width: '450px',
+            }
+            });
+
+            var completefailed = $("#invalidlogin").dialog({
+                resizable: false,
+            height: 'auto',
+            width: 400,
             modal: true,
-            autoOpen: false,
             dialogClass: 'dlgfixed',
             position: "center",
             overlay: { display: 'none', opacity: 0 },
-            buttons: {
-                "Reassign": function () {
-
-                    var objects = $('#datatable2 tbody input[type=checkbox]:checked');
-                    var scorer = $("#PossibleScorers option:selected").val();
-                    var name = $("#PossibleScorers option:selected").text();
-
-                    if (objects.length == 0) {
-                        alert("Please select at least one item to reassign");
-                        return true;
+                autoOpen: false,
+                buttons: {
+                    "OK": function () {
+                    //Close
+                    var objects = getObjects();
+                    if (objects.length != 0) {
+                        for (var i = 0; i < objects.length; i++) {
+                            if ($(objects[i]).data("teacherid") != "@ViewBag.Loginuser")
+                                $(objects[i]).prop("checked", false);
+                        }
+                        var objects = getObjects();
+                        if (objects.length != 0) {
+                            MarkItems();
+                        }
                     }
-
-                    if (scorer === "-1") {
-                        alert("Please select a scorer from the drop down list.");
-                        return false;
-                    }
-                    $("#lblReassign").text("Are you sure you want Reassign " + objects.length + " Item(s) to " + name + " ?");
-                    reassignComplete.dialog('open');
                     $(this).dialog("close");
                 },
                 Cancel: function () {
-                    $(this).dialog("close");
-                }
-            }
-        });
-
-        // Populate the 'ReassignSelected' dialog box.
-        var GetTeachers = function () {
-            $.ajax({
-                url: '/api/Teacher/GetScorersforReAssign/',
-                success: function (data) {
-                    if ($("#PossibleScorers").val() === 'Loading...') {
-                        $("#PossibleScorers").children().remove();
-                        var select = $("<option value='-1'>Select a Scorer</option>");
-                        $("#PossibleScorers").append(select);
-                        $.each(data, function () {
-                            // Am I an admin, who can assign items to others, including myself?
-                            var isadmin = ("@Model.IsAdmin".toLowerCase() == "true");
-
-                            // User index is username (casbac) or email (everyone else)
-                            var user = ("@Model.UserEmailAsUuid".toLowerCase() == "true") ? this.email : this.username;
-
-                            // Avoid listing myself in the list if I am non-admin, as I am only seeing my own items to begin with.
-                            var isNotSelf = ("@Model.TSSUserID" != user);
-
-                            var option;
-                            if (isadmin || isNotSelf) {
-                                option = $("<option value='" + user + "' title='" + user + "'>" + this.firstName + " " + this.lastName + "</option>");
-                                $("#PossibleScorers").append(option);
-                            }
-                        });
+                    var objects = getObjects();
+                    if (objects.length != 0) {
+                        for (var i = 0; i < objects.length; i++) {
+                            $(objects[i]).prop("checked", false);
+                        }                       
                     }
-                },
-                error: function (data) {
-                    console.log('GetTeachers() Error', data);
-                }
-            });
-        };        
-
-        var ReassignItems = function () {
-            var objects = $('#datatable2 tbody input[type=checkbox]:checked');
-            var items = [];
-            var scorer = $("#PossibleScorers option:selected").val();
-            var name = $("#PossibleScorers option:selected").text();
-
-            for (var i = 0; i < objects.length; i++) {
-
-                if ($(objects[i]).data("assignmentid") != null) {
-                    items.push($(objects[i]).data("assignmentid"));
-                }
-            }
-
-            var post = JSON.stringify({ ids: items, scorerUUID: scorer, name: name });
-
-            $.ajax({
-                url: '/Ajax/ReassignScorer',
-                type: 'POST',
-                dataType: 'json',
-                data: post,
-                contentType: 'application/json',
-                async: false,
-                success: function (data) {
-                    ReLoadDataTable();
-                    console.debug(data);
-                },
-                error: function (data) {
-                    console.debug(data);
-                }
-
-            });
-
-            return true;
-        };
-        var MarkItems = function () {
-            var objects = $('#datatable2 tbody input[type=checkbox]:checked');
-            var items = [];
-
-            if (objects.length == 0) {
-                alert("Please select at least one item to reassign");
-                return;
-            }
-
-            for (var i = 0; i < objects.length; i++) {
-
-                if ($(objects[i]).data("status").toString().toUpperCase() !== "TENTATIVESCORE") {
-                    alert("You have selected items that can not be marked completed!");
-                    return;
-                }
-            }
-
-            for (var i = 0; i < objects.length; i++) {
-
-                if ($(objects[i]).data("assignmentid") != null) {
-                    items.push($(objects[i]).data("assignmentid"));
-                }
-            }
-
-            for (var i = 0; i < objects.length; i++) {
-
-                if ($(objects[i]).data("teacherid") != "@ViewBag.Loginuser") {
-                    //alert('You are not allowed to score this Item');
-                    $("#invalidlogin").dialog("open");
-                    $(objects[i]).prop("checked", false);
-                    return;
-                }
-            }
-            var post = JSON.stringify({ ids: items, status: 2 });
-
-            if (document.cookie == "") {
-                window.location.reload(true);
-            }
-
-            $.ajax({
-                url: '/Ajax/MarkItems',
-                type: 'POST',
-                dataType: 'json',
-                data: post,
-                contentType: 'application/json',
-                async: false,
-                success: function (data) {
-                    ReLoadDataTable();
-                    console.debug(data);
-                },
-                error: function (data) {
-                    console.debug(data);
-                    if (data.status == 0) {
-                        window.location.replace("/home/ItemList");
+                        $(this).dialog("close");
                     }
                 }
             });
 
-        };
-
-        //adminCheckbox
-        $("#adminCheckbox").click(function (event) {
-            //e.preventDefault();
-            var isAdmin = this.checked;
-
-            renderAdmin(isAdmin);
-
-        });
-
-        $("#completeButton").button().click(function (event) {
-            $(".dlgfixed").center(true);
-            $(".ui-dialog").on("dragstart", function () {
-                $(this).css("margin", "0px");
-                $(this).css("margin-top", "100px");
-            });
-            //All the checked rows should be removed.
-            //Spin through each row in the DataTable, if that row is checked, remove it.
-            //Need to grab the correctly sorted and filtered dataset.
-            var rows = $("#datatable2").dataTable()._('tr', { "filter": "applied" });
-
-            //START VALIDATION
-            var closeIt = false;
-            var getObjects = function () { return $('#datatable2 tbody input[type=checkbox]:checked') };
-            var validateSelections = function (objects) {
-                var hasConfirmDisplayed = false;
-                for (var i = 0; i < objects.length; i++) {
-                    if ($(objects[i]).data("status").toString().toUpperCase() !== "TENTATIVESCORE") {
-                        if (!hasConfirmDisplayed && !confirm("You have selected items that cannot be marked complete.\r Clicking 'OK' will unselect these items and continue. \r Clicking 'Cancel' will cancel this action.")) {
-                            closeIt = true;
-                            break;
+            var reassignComplete = $("#reassign-complete").dialog({
+                resizable: false,
+                height: 150,
+                width: '450px',
+                modal: true,
+                autoOpen: false,
+                buttons: {
+                    "Reassign": function () {
+                        if (ReassignItems()) {
+                            $(this).dialog("close");
                         }
-                        hasConfirmDisplayed = true;
-                        $(objects[i]).prop("checked", false);
+                    },
+                    Cancel: function () {
+                        $(this).dialog("close");
                     }
                 }
+            });
+
+            //Reassign Dialog
+            var reassignDialog = $("#dialog-reassign").dialog({
+                resizable: false,
+                height: 350,
+                width: '450px',
+                modal: true,
+                autoOpen: false,
+                dialogClass: 'dlgfixed',
+                position: "center",
+                overlay: { display: 'none', opacity: 0 },
+                buttons: {
+                    "Reassign": function () {
+
+                        var objects = $('#datatable2 tbody input[type=checkbox]:checked');
+                        var scorer = $("#PossibleScorers option:selected").val();
+                        var name = $("#PossibleScorers option:selected").text();
+
+                        if (objects.length == 0) {
+                            alert("Please select at least one item to reassign");
+                            return true;
+                        }
+
+                        if (scorer === "-1") {
+                            alert("Please select a scorer from the drop down list.");
+                            return false;
+                        }
+                        $("#lblReassign").text("Are you sure you want Reassign " + objects.length + " Item(s) to " + name + " ?");
+                        reassignComplete.dialog('open');
+                        $(this).dialog("close");
+                    },
+                    Cancel: function () {
+                        $(this).dialog("close");
+                    }
+                }
+            });
+
+            // Populate the 'ReassignSelected' dialog box.
+            var GetTeachers = function () {
+                $.ajax({
+                    url: '/api/Teacher/GetScorersforReAssign/',
+                    success: function (data) {
+                        try {
+                            if ($("#PossibleScorers").val() === 'Loading...') {
+                                $("#PossibleScorers").children().remove();
+                                var select = $("<option value='-1'>Select a Scorer</option>");
+                                $("#PossibleScorers").append(select);
+                                $.each(data, function () {
+                                    // Am I an admin, who can assign items to others, including myself?
+                                    var isadmin = ("@Model.IsAdmin".toLowerCase() == "true");
+
+                                    // User index is username (casbac) or email (everyone else)
+                                    var user =  this.email;
+
+                                    // Avoid listing myself in the list if I am non-admin, as I am only seeing my own items to begin with.
+                                    var isNotSelf = ("@Model.TSSUserID" != user);
+
+                                    var option;
+                                    if (isadmin || isNotSelf) {
+                                        option = $("<option value='" + user + "' title='" + user + "'>" + this.firstName + " " + this.lastName + "</option>");
+                                        $("#PossibleScorers").append(option);
+                                    }
+                                });
+                                $(".ui-dialog-buttonset button").each(function () {
+                                    if ($(this).text() == "Reassign") {
+                                        $(this).removeAttr("disabled");
+                                    }
+                                });
+                            }
+                        }
+                        catch (e) {
+                            TraceKit.report(e);
+                        }
+                    },
+                    error: function (data) {
+                        console.log('GetTeachers() Error', data);
+                    }
+                });
+        };
+
+            var ReassignItems = function () {
+                var objects = $('#datatable2 tbody input[type=checkbox]:checked');
+                var items = [];
+                var scorer = $("#PossibleScorers option:selected").val();
+                var name = $("#PossibleScorers option:selected").text();
+
+                for (var i = 0; i < objects.length; i++) {
+
+                    if ($(objects[i]).data("assignmentid") != null) {
+                        items.push($(objects[i]).data("assignmentid"));
+                    }
+                }
+
+                var post = JSON.stringify({ ids: items, scorerUUID: scorer, name: name });
+
+                $.ajax({
+                    url: '/Ajax/ReassignScorer',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: post,
+                    contentType: 'application/json',
+                    async: false,
+                    success: function (data) {
+                        try {
+                            ReLoadDataTable();
+                            console.debug(data);
+                        }catch (e) {
+                            TraceKit.report(e);
+                        }
+                    },
+                    error: function (data) {
+                        console.debug(data);
+                    }
+
+                });
+
+                return true;
+            };
+            var MarkItems = function () {
+                var objects = $('#datatable2 tbody input[type=checkbox]:checked');
+                var items = [];
+
+                if (objects.length == 0) {
+                    alert("Please select at least one item to reassign");
+                    return;
+                }
+
+                for (var i = 0; i < objects.length; i++) {
+
+                    if ($(objects[i]).data("status").toString().toUpperCase() !== "TENTATIVESCORE") {
+                        alert("You have selected items that can not be marked completed!");
+                        return;
+                    }
+                }
+
+                for (var i = 0; i < objects.length; i++) {
+
+                    if ($(objects[i]).data("assignmentid") != null) {
+                        items.push($(objects[i]).data("assignmentid"));
+                    }
+                }
+
+                for (var i = 0; i < objects.length; i++) {
+
+                    if ($(objects[i]).data("teacherid") != "@ViewBag.Loginuser") {
+                        //alert('You are not allowed to score this Item');
+                        $("#invalidlogin").dialog("open");
+                        $(objects[i]).prop("checked", false);
+                        return;
+                }
+                }
+                var post = JSON.stringify({ ids: items, status: 2 });
+
+                if (document.cookie == "") {
+                    window.location.reload(true);
+                }
+
+                $.ajax({
+                    url: '/Ajax/MarkItems',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: post,
+                    contentType: 'application/json',
+                    async: false,
+                    success: function (data) {
+                        try
+                        {
+                            ReLoadDataTable();
+                            console.debug(data);
+                        } catch (e) {
+                            TraceKit.report(e);
+                        }
+                    },
+                    error: function (data) {
+                        console.debug(data);
+                        if (data.status == 0) {
+                            window.location.replace("/home/ItemList");
+                        }
+                    }
+                });
+
             };
 
-            validateSelections(getObjects());
-            var objects = getObjects();
-            if (objects.length == 0 || closeIt) {
-                //$(this).dialog("close");
-            } else {
-                completeDialog.dialog("open");
-            }
+            //adminCheckbox
+            $("#adminCheckbox").click(function (event) {
+                //e.preventDefault();
+                var isAdmin = this.checked;
 
-            event.preventDefault();
-        });
-        $("#reassignButton").button().click(function (event) {
+                renderAdmin(isAdmin);
 
-            reassignDialog.dialog("open");
-            $(".dlgfixed").center(true);
-            $(".ui-widget-overlay").css("z-index", "9");
-            $(".ui-dialog").on("dragstart", function () {
-                $(this).css("margin", "0px");
-
-                $(this).css("margin-left", "0px");
-                $(this).css("margin-bottom", "40px");
-                $(this).css("margin-top", "100px");
             });
-            GetTeachers();
-            event.preventDefault();
-        });
 
-        //districtCheckbox
-        $("#districtCheckbox").click(function (event) {
-            //e.preventDefault();
+        var getObjects = function () { return $('#datatable2 tbody input[type=checkbox]:checked') };
 
-            if (this.checked) {
-                //Turn on Filters
-                $(".districtFilter").show();
+            $("#completeButton").button().click(function (event) {
+                $(".dlgfixed").center(true);
+                $(".ui-dialog").on("dragstart", function () {
+                $(this).css("margin", "0px");
+                    $(this).css("margin-top", "100px");
+                });
+                //All the checked rows should be removed.
+                //Spin through each row in the DataTable, if that row is checked, remove it.
+                //Need to grab the correctly sorted and filtered dataset.
+                var rows = $("#datatable2").dataTable()._('tr', { "filter": "applied" });
 
-            } else {
-                //Turn on Filters
-                $(".districtFilter").hide();
+                //START VALIDATION
+                var closeIt = false;
+                if (getObjects().length == 0) {
+                    alert("Please select at least one name to mark as complete");
+                    return;
+                }
+                var validateSelections = function (objects) {
+                    var hasConfirmDisplayed = false;
+                    for (var i = 0; i < objects.length; i++) {
+                        if ($(objects[i]).data("status").toString().toUpperCase() !== "TENTATIVESCORE") {
+                            if (!hasConfirmDisplayed && !confirm("You have selected items that cannot be marked complete.\r Clicking 'OK' will unselect these items and continue. \r Clicking 'Cancel' will cancel this action.")) {
+                                closeIt = true;
+                                break;
+                            }
+                            hasConfirmDisplayed = true;
+                            $(objects[i]).prop("checked", false);
+                        }
+                }
+                };
+
+                validateSelections(getObjects());
+                var objects = getObjects();
+            for (var i = 0; i < objects.length; i++) {
+                if ($(objects[i]).data("teacherid") != "@ViewBag.Loginuser") {
+                completefailed.dialog("open");
+                $(".dlgfixed").center(false);
+                $(".ui-widget-overlay").css("z-index", "9");
+                $(objects[i]).prop("checked", false);
+                return;
             }
+        }
+                if (objects.length == 0 || closeIt) {
+                    //$(this).dialog("close");
+                } else {
+                    completeDialog.dialog("open");
+                }
 
-        });
-        $(".score-it").click(function (event) {
-            //This is currently just handled in the HREF on the table.
-            //window.open('/Home/ItemDetail');
-            //event.preventDefault();
-        });
+                event.preventDefault();
+            });
+            $("#reassignButton").button().click(function (event) {
 
+                reassignDialog.dialog("open");
+                $(".ui-dialog-buttonset button").each(function () {
+                    if ($("#PossibleScorers").val() === 'Loading...') {
+                        if ($(this).text() == "Reassign") {
+                            $(this).attr("disabled", "disabled");
+                        }
+                    }
+                });
+                $(".dlgfixed").center(true);
+                $(".ui-widget-overlay").css("z-index", "9");
+                $(".ui-dialog").on("dragstart", function () {
+                    $(this).css("margin", "0px");
 
+                    $(this).css("margin-left", "0px");
+                    $(this).css("margin-bottom", "40px");
+                    $(this).css("margin-top", "100px");
+                });
+                GetTeachers();
+                event.preventDefault();
+            });
+
+            //districtCheckbox
+            $("#districtCheckbox").click(function (event) {
+                //e.preventDefault();
+
+                if (this.checked) {
+                    //Turn on Filters
+                    $(".districtFilter").show();
+
+                } else {
+                    //Turn on Filters
+                    $(".districtFilter").hide();
+                }
+
+            });
+            $(".score-it").click(function (event) {
+                //This is currently just handled in the HREF on the table.
+                //window.open('/Home/ItemDetail');
+                //event.preventDefault();
+            });
+
+        } catch (e)
+        {
+            TraceKit.report(e);
+        }
 
 
     });

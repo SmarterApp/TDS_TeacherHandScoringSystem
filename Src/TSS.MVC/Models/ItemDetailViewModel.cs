@@ -8,16 +8,6 @@
 //  * http://www.smarterapp.org/documents/American_Institutes_for_Research_Open_Source_Software_License.pdf                                                                                                                                                 
 //  ******************************************************************************/ 
 #endregion
-#region License
-// /*******************************************************************************                                                                                                                                    
-//  * Educational Online Test Delivery System                                                                                                                                                                       
-//  * Copyright (c) 2014 American Institutes for Research                                                                                                                                                              
-//  *                                                                                                                                                                                                                  
-//  * Distributed under the AIR Open Source License, Version 1.0                                                                                                                                                       
-//  * See accompanying file AIR-License-1_0.txt or at                                                                                                                                                                  
-//  * http://www.smarterapp.org/documents/American_Institutes_for_Research_Open_Source_Software_License.pdf                                                                                                                                                 
-//  ******************************************************************************/ 
-#endregion
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -40,7 +30,7 @@ namespace TSS.MVC.Models
         {
             get
             {
-                return ConfigurationManager.AppSettings["IRISBlackbox_ROOT_URL"].ToString();
+                return Convert.ToString(ConfigurationManager.AppSettings["IRISBlackbox_ROOT_URL"]);
             }
         }
 
@@ -99,7 +89,7 @@ namespace TSS.MVC.Models
         {
             get
             {
-                return ConfigurationManager.AppSettings["IRIS_VENDOR_ID"].ToString();
+                return Convert.ToString(ConfigurationManager.AppSettings["IRIS_VENDOR_ID"]) ?? string.Empty;
             }
         }
 
@@ -110,7 +100,7 @@ namespace TSS.MVC.Models
         {
             get
             {
-                return ConfigurationManager.AppSettings["IRIS_ROOT_URL"].ToString();
+                return Convert.ToString(ConfigurationManager.AppSettings["IRIS_ROOT_URL"]) ?? string.Empty;
             }
         }
 
@@ -118,7 +108,7 @@ namespace TSS.MVC.Models
         {
             get
             {
-                return ConfigurationManager.AppSettings["IRISBlackbox_ROOT_URL"].ToString();
+                return Convert.ToString(ConfigurationManager.AppSettings["IRISBlackbox_ROOT_URL"]) ?? string.Empty;
             }
         }
 
@@ -157,8 +147,7 @@ namespace TSS.MVC.Models
 			this.Session = assignment.SessionId;
             this.StudentName = assignment.Student.Name;
 			this.AssignedAssignmentId = assignment.AssignmentId;
-            this.Response = HttpUtility.HtmlEncode(assignment.StudentResponse.Response);
-            
+            this.Response = assignment.StudentResponse.Response;
             this.ScoreStatus = (assignment.ScoreStatus == StudentResponseAssignment.ScoreStatusCode.NotScored ? "Not Scored" : assignment.ScoreStatus == StudentResponseAssignment.ScoreStatusCode.TentativeScore ? "Tentatively Scored" : "Scored");
 
 		}

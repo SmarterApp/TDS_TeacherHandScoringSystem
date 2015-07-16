@@ -1,17 +1,19 @@
-﻿@{
+﻿@using TSS.MVC
+@{
     ViewBag.Title = "Home";
     Layout = "_Layout.cshtml";
     try
     {
-        ViewBag.TenancyChain = TSS.MVC.UserAttributes.SAML.TenancyChainList;
+        TSS.MVC.UserAttributes ua = new UserAttributes();
+        ViewBag.Loginuser = ua.TSSUserID;
     }
     catch
     {
-        ViewBag.TenancyChain = null;
+        ViewBag.Loginuser = null;
     }
 }
 
-@if (ViewBag.TenancyChain != null)
+@if (ViewBag.Loginuser != null)
 {
     <h2>Loading...</h2>
     <script>

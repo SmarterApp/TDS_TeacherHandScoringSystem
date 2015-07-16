@@ -81,6 +81,14 @@ namespace SAML.Common
         public static string ConfigFolder;
         public static string KeepAlive;
         private static bool initialized = false;
+
+        //CookieNames
+        public const string TSS_MAIL = "TSS-MAIL";
+        public const string TSS_UUID = "TSS-UUID";
+        public const string TSS_GIVENNAME = "TSS-GIVENNAME";
+        public const string HASRUN = "HASRUN";
+        public const string LogoutURL = "LogoutURL";
+        public const string ACTIVE_DISTRICT = "ACTIVE_DISTRICT";
         
 
         //public static string RefreshSessionURL = "http://ssotest.airast.org:8080/auth/identity/attributes?attributenames=idletime&attributenames=maxidletime&attributenames=timeleft&attributenames=maxsessiontime&refresh=true";

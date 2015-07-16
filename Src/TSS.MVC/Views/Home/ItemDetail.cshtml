@@ -82,10 +82,14 @@
             console.log("Loading item " + id);
             currentAssignmentId = id;
             $.get('/Home/ItemView/' + id).done(function (resp) {
-                updateItemSet(id);
-                $('#content').html(resp);
-                window.loadBlackbox();
-                $('#responseFrame').attr("src", $('#responseFrame').attr("src"));
+                try{
+                    updateItemSet(id);
+                    $('#content').html(resp);
+                    window.loadBlackbox();
+                    $('#responseFrame').attr("src", $('#responseFrame').attr("src"));
+                } catch (e) {
+                    TraceKit.report(e);
+                }
             }).fail(function (resp) {
                 console.log(resp);
                 alert("Unable to load item.");

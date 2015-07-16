@@ -1,4 +1,4 @@
-/*
+﻿/*
  /*******************************************************************************                                                                                                                                    
   * Educational Online Test Delivery System                                                                                                                                                                       
   * Copyright (c) 2014 American Institutes for Research                                                                                                                                                              
@@ -18,5 +18,4 @@ CREATE TABLE [dbo].[Dimensions] (
     CONSTRAINT [PK__Dimensio__1F7D4F110A688BB1] PRIMARY KEY CLUSTERED ([DimensionId] ASC),
     CONSTRAINT [FK_Bank_Item] FOREIGN KEY ([BankKey], [ItemKey]) REFERENCES [dbo].[Items] ([BankKey], [ItemKey])
 );
-
 

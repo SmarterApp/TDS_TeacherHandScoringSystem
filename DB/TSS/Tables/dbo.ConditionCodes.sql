@@ -1,4 +1,4 @@
-/*
+﻿/*
  /*******************************************************************************                                                                                                                                    
   * Educational Online Test Delivery System                                                                                                                                                                       
   * Copyright (c) 2014 American Institutes for Research                                                                                                                                                              
@@ -16,5 +16,4 @@ CREATE TABLE [dbo].[ConditionCodes] (
     CONSTRAINT [PK__Conditio__A1AC31510F2D40CE] PRIMARY KEY CLUSTERED ([ConditionCodeId] ASC),
     CONSTRAINT [FK4D988D0F5ADE57E0] FOREIGN KEY ([DimensionId]) REFERENCES [dbo].[Dimensions] ([DimensionId])
 );
-
 

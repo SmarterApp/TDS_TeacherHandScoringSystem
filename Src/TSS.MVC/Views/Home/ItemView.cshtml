@@ -1,4 +1,5 @@
-﻿@using TSS.MVC.Models
+﻿@using System.Text.RegularExpressions
+@using TSS.MVC.Models
 @model ItemDetailViewModel
 
 <div class="ItemDetailPageHeader">
@@ -120,18 +121,22 @@
 <script type="text/javascript">
     
     window.loadBlackbox = function () {
-        IRiS.setFrame(frames[0]);
-        @*var response = '@Html.Raw(System.Text.RegularExpressions.Regex.Replace(Model.Response, @"\t|\n|\r", "").Replace("\"", "&#34;").Replace("\'", "&#39;"))';
-        response = response.replace(/&#34;/g, '"').replace(/&#39;/g, "'");*@ // undo .NET encoding of quotes
-       var response = '@Html.Raw(Model.Response)';
-       var items = '@Html.Raw(Model.ContentToken)';
-       IRiS.loadToken('@Model.VendorId', items).done(function () {
-           console.log("Setting response: " + response);
-           if (response) IRiS.setResponse(response);
-       }).fail(function () {
-           // alert("Failed to set student response.");
-       });
-       //IRiS.setFrame(frames[0]);
+        try
+        {
+            IRiS.setFrame(frames[0]);
+            var response = '@Html.Raw(System.Text.RegularExpressions.Regex.Replace(Model.Response, @"\t|\n|\r", "").Replace("\"", "&quot;").Replace("\'", "&#39;"))';
+            var items = '@Html.Raw(Model.ContentToken)';
+            IRiS.loadToken('@Model.VendorId', items).done(function () {
+            console.log("Setting response: " + response);
+            if (response) IRiS.setResponse(response);
+        }).fail(function () {
+            // alert("Failed to set student response.");
+        });
+         //IRiS.setFrame(frames[0]);
+        }
+        catch (e) {
+            TraceKit.report(e);
+        }
    };
     
     function getParameterByName(name) {

@@ -1,4 +1,4 @@
-/*
+﻿/*
  /*******************************************************************************                                                                                                                                    
   * Educational Online Test Delivery System                                                                                                                                                                       
   * Copyright (c) 2014 American Institutes for Research                                                                                                                                                              
@@ -33,5 +33,4 @@ GO
 GO
 CREATE STATISTICS [_dta_stat_1227151417_1_2_5]
     ON [dbo].[Responses]([ResponseID], [BankKey], [ItemKey]);
-
 

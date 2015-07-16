@@ -1,4 +1,4 @@
-/*
+﻿/*
  /*******************************************************************************                                                                                                                                    
   * Educational Online Test Delivery System                                                                                                                                                                       
   * Copyright (c) 2014 American Institutes for Research                                                                                                                                                              
@@ -20,5 +20,4 @@ CREATE TABLE [dbo].[_dbLatency] (
 GO
 CREATE CLUSTERED INDEX [ix_dbLatency_StartDate]
     ON [dbo].[_dbLatency]([StartDate] ASC);
-
 

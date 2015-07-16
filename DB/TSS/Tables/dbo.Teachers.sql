@@ -1,4 +1,4 @@
-/*
+﻿/*
  /*******************************************************************************                                                                                                                                    
   * Educational Online Test Delivery System                                                                                                                                                                       
   * Copyright (c) 2014 American Institutes for Research                                                                                                                                                              
@@ -13,5 +13,4 @@ CREATE TABLE [dbo].[Teachers] (
     [Name]      VARCHAR (250) NOT NULL,
     CONSTRAINT [PK_Teachers] PRIMARY KEY CLUSTERED ([TeacherID] ASC)
 );
-
 

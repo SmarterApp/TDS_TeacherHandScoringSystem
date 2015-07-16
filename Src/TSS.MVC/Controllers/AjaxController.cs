@@ -1,4 +1,4 @@
-#region License
+﻿#region License
 // /*******************************************************************************                                                                                                                                    
 //  * Educational Online Test Delivery System                                                                                                                                                                       
 //  * Copyright (c) 2014 American Institutes for Research                                                                                                                                                              
@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
+using System.Text;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.SessionState;
@@ -27,7 +28,7 @@ namespace TSS.MVC.Controllers
     /// http://stackoverflow.com/questions/4428413/why-would-multiple-simultaneous-ajax-calls-to-the-same-asp-net-mvc-action-cause
     /// </summary>
     [SessionState(SessionStateBehavior.Disabled)]
-    public class AjaxController : Controller
+    public class AjaxController : BaseController
     {
      
 		public readonly IExportService _exportService;
@@ -59,7 +60,7 @@ namespace TSS.MVC.Controllers
             }
             catch (Exception exc)
             {
-                LoggerRepository.LogException(exc);
+                LoggerRepository.LogException(exc,"Reassigning the scorer Failed in Database");
                 return Json(new { success = false, data = string.Format("\"Error Code\": \"{0}\"  \"Message\":\"{1}\"", 4002, exc.Message) });
             }
         }
@@ -106,14 +107,27 @@ namespace TSS.MVC.Controllers
                         {
                             Category = LogCategory.Application,
                             Level = LogLevel.Error,
-                            Message = "Unable to export score to scoring service.",
+                            Message = "Unable to export score to scoring service.",                            
                             Details = ex.Message + "\r\n" + ex.StackTrace
-                        });
+                        },true);
                     }
                 }
 
                 //remove scored responses and assignments
-                _studentResponseService.RemoveAssignments(successfullyScored.ToArray());
+                bool retCode = _studentResponseService.RemoveAssignments(successfullyScored.ToArray());
+                //fails removing assginments, log all the assignments ids and can be removed late through a nightly maintenaince script.
+                if (!retCode)
+                {
+                    StringBuilder assignmentIDs = new StringBuilder();
+                    Array.ForEach(successfullyScored.ToArray(),s=>assignmentIDs.Append(s + ","));
+                    LoggerRepository.SaveLog(new Log
+                                                 {
+                                                     Category = LogCategory.Application,
+                                                     Level = LogLevel.Warning,
+                                                     Message = "Failed to remove assignments and their responses:" ,
+                                                     Details = "These assginment IDs are: " +  assignmentIDs
+                                                 },true);
+                }
                 //Mark as tentative if not scored.
                 _studentResponseService.UpdateAssignmentStatus(notsuccessfullyScored.ToArray(), 1);
 
@@ -121,10 +135,9 @@ namespace TSS.MVC.Controllers
             }
             catch (Exception exc)
             {
-                LoggerRepository.LogException(exc);
+                LoggerRepository.LogException(exc,"No Tentatively Scored Assignments found from Database");
                 return Json(new { success = false, data = string.Format("\"Error Code\": \"{0}\"  \"Message\":\"{1}\"", 4001, exc.Message) });
             }
         }
     }
 }
-

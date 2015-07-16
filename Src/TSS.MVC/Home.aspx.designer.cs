@@ -50,4 +50,3 @@ namespace TSS.MVC {
         protected global::System.Web.UI.WebControls.LinkButton btnLogout;
     }
 }
-

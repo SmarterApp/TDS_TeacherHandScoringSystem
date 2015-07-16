@@ -281,3 +281,12 @@ The Teacher Hand Scoring System has not undergone a complete system testing or i
 *  Various Bug Fixes
 *  Stored procedure changes for some bug fixes
 * Removed some unnecessary code,  removing district and school from table
+
+### 6/30/2015
+1. Enhanced exception handling, including client-side JavaScript error handling, enhanced error messages, having trace/activity logs and error logs stored into different database tables.
+2. Removed duplicated license header information. Somehow, the C# code files in BB contain duplicated license header.
+3. Moved server side session variables to cookies. In order to deploy THSS to a web farm, previously, the sticky session was required to be on so that different web servers could share session variables. After this change, the sticky session doesn’t need to be on so to better the web server performance.
+4. Code-refactored with UserAttribute class attributes.
+5. Loaded User Permissions definition through singleton, so that a web request to permission server is only fired once.
+6. Increased sql command time-out for persisting test responses from a large test xml file to database. 
+7. Fixed some deadlock issues with persisting responses to database tables.

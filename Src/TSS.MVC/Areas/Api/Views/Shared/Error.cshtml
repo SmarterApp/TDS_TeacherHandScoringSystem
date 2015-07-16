@@ -1,0 +1,19 @@
+﻿@model System.Web.Mvc.HandleErrorInfo
+@{
+    Layout = "";
+    ViewBag.Title = "Error";
+}
+
+<section class="right_pane">
+    <hgroup class="error">
+        <h2>An Error Occured while processing Request</h2>
+        @if (Model != null)
+        {
+            if (Model.Exception != null)
+            {
+            <p style="color:red">Error Info: @Model.Exception.Message:@Model.Exception.InnerException</p>@*
+            <h3>Stack Trace: @Model.Exception.StackTrace</h3>*@
+            }
+        }
+    </hgroup>
+</section>

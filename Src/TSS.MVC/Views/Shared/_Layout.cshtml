@@ -8,73 +8,137 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="A Teacher Student Scoring Dashboard.">
     <meta name="author" content="Summit">
-    <meta name="apple-mobile-web-app-capable" content="yes">    
+    <meta name="apple-mobile-web-app-capable" content="yes">
 
-        @*=================================================================================================
+    @*=================================================================================================
             CSS Loading
         =================================================================================================*@
-        <link id="bs-css" href="@Url.Content("~/Content/bootstrap.css")" rel="stylesheet" type="text/css">
-        <link href="@Url.Content("~/Content/bootstrap-responsive.css")" rel="stylesheet" type="text/css">
-        <link href="@Url.Content("~/Content/site.css")" rel="stylesheet" type="text/css">
-        <link href="@Url.Content("~/Content/jquery-ui.min.css")" rel="stylesheet" type="text/css">
-        <link href="@Url.Content("~/Content/jquery-ui.theme.css")" rel="stylesheet" type="text/css" />
-        <link href="@Url.Content("~/Content/chosen.css")" rel="stylesheet" type="text/css">
-        <link href="@Url.Content("~/Content/colorbox.css")" rel="stylesheet" type="text/css">
-        <link href="@Url.Content("~/Content/jquery.dataTables.min.css")" rel="stylesheet" type="text/css">
-        <!-- Copied smoothness to project to alleviate SSL errors --> 
-        <link href="@Url.Content("~/Content/smoothness.jquery-ui.css")" rel="stylesheet" type="text/css">
+    <link id="bs-css" href="@Url.Content("~/Content/bootstrap.css")" rel="stylesheet" type="text/css">
+    <link href="@Url.Content("~/Content/bootstrap-responsive.css")" rel="stylesheet" type="text/css">
+    <link href="@Url.Content("~/Content/site.css")" rel="stylesheet" type="text/css">
+    <link href="@Url.Content("~/Content/jquery-ui.min.css")" rel="stylesheet" type="text/css">
+    <link href="@Url.Content("~/Content/jquery-ui.theme.css")" rel="stylesheet" type="text/css" />
+    <link href="@Url.Content("~/Content/chosen.css")" rel="stylesheet" type="text/css">
+    <link href="@Url.Content("~/Content/colorbox.css")" rel="stylesheet" type="text/css">
+    <link href="@Url.Content("~/Content/jquery.dataTables.min.css")" rel="stylesheet" type="text/css">
+    <!-- Copied smoothness to project to alleviate SSL errors -->
+    <link href="@Url.Content("~/Content/smoothness.jquery-ui.css")" rel="stylesheet" type="text/css">
 
-        <!-- The fav icon -->
-        <link rel="shortcut icon" href="Images/favicon.png">        
+    <!-- The fav icon -->
+    <link rel="shortcut icon" href="Images/favicon.png">
 
-        @*=================================================================================================
+    @*=================================================================================================
             Script Loading
         =================================================================================================*@
-        
-        <!--jQuery-->
-       <!-- //Bootstrap-->        
-        <script src="@Url.Content("~/Scripts/jquery-2.0.1.min.js")"> </script>
-        <script src="@Url.Content("~/Scripts/bootstrap.min.js")"> </script>
-        <!-- //jQuery UI-->
-        <script src="@Url.Content("~/Scripts/jquery-ui.min.js")"> </script>
-        <!-- ***** Validate ***** -->
-        <script src="@Url.Content("~/Scripts/jquery.validate.js")"></script>
-        <script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.js")"></script>   
-        <!-- //library for cookie management -->
-        <script src="@Url.Content("~/Scripts/jquery.cookie.js")"> </script>
-        <!-- //select or dropdown enhancer-->
-        <script src="@Url.Content("~/Scripts/chosen.jquery.min.js")"> </script>
-        <!-- // plug-in for gallery image view -->
-        <script src="@Url.Content("~/Scripts/jquery.colorbox.min.js")"> </script>
-        <!--  // Jquery DataTables-->
-        <script src="@Url.Content("~/Scripts/jquery.dataTables.min.js")"> </script>
-        <!-- // modernizr -->
-        <script src="@Url.Content("~/Scripts/modernizr-2.6.2.js")"> </script>
-        <!-- //Handlebars-->
-        <script src="@Url.Content("~/Scripts/handlebars-v2.0.0.js")"> </script>
-        <script src="@Url.Content("~/Scripts/jquery.center.js")"></script>
-        <!--<script src="@Url.Content("~/Content/bootstrap/js/libs/bootstrap.min.js")"></script>-->
-        <!-- //Local Storage-->
-        <script src="@Url.Content("~/Scripts/jquery.storageapi.min.js")"> </script>
 
-        <!--//TSS APP SCRIPT -->
-        <script type="text/javascript" src="@Url.Content("~/Scripts/app/TSS.Data.Item.js")"></script>
+    <!--jQuery-->
+    <!-- //Bootstrap-->
+    <script src="@Url.Content("~/Scripts/jquery-2.0.1.min.js")"> </script>
+    <script src="@Url.Content("~/Scripts/bootstrap.min.js")"> </script>
+    <!-- //jQuery UI-->
+    <script src="@Url.Content("~/Scripts/jquery-ui.min.js")"> </script>
+    <!-- ***** Validate ***** -->
+    <script src="@Url.Content("~/Scripts/jquery.validate.js")"></script>
+    <script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.js")"></script>
+    <!-- //library for cookie management -->
+    <script src="@Url.Content("~/Scripts/jquery.cookie.js")"> </script>
+    <!-- //select or dropdown enhancer-->
+    <script src="@Url.Content("~/Scripts/chosen.jquery.min.js")"> </script>
+    <!-- // plug-in for gallery image view -->
+    <script src="@Url.Content("~/Scripts/jquery.colorbox.min.js")"> </script>
+    <!--  // Jquery DataTables-->
+    <script src="@Url.Content("~/Scripts/jquery.dataTables.min.js")"> </script>
+    <!-- // modernizr -->
+    <script src="@Url.Content("~/Scripts/modernizr-2.6.2.js")"> </script>
+    <!-- //Handlebars-->
+    <script src="@Url.Content("~/Scripts/handlebars-v2.0.0.js")"> </script>
+    <script src="@Url.Content("~/Scripts/jquery.center.js")"></script>
+    <!--<script src="@Url.Content("~/Content/bootstrap/js/libs/bootstrap.min.js")"></script>-->
+    <!-- //Local Storage-->
+    <script src="@Url.Content("~/Scripts/jquery.storageapi.min.js")"> </script>
 
+    <!--//TSS APP SCRIPT -->
+    <script type="text/javascript" src="@Url.Content("~/Scripts/app/TSS.Data.Item.js")"></script>
+    <script src="@Url.Content("~/Scripts/tracekit.js")"></script>
 
-        <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
-        <!--[if lt IE 9]>
+    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
           <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
         <![endif]-->
 </head>
-    <body>
+<body>
 
-        @Html.Partial("_Header")
+    @Html.Partial("_Header")
 
-        <div class="page-body">
-            @RenderBody()
-        </div>
+    <div class="page-body">
+        @RenderBody()
+    </div>
 
-        @Html.Partial("_Footer")
-
-    </body>
+    @Html.Partial("_Footer")
+    
+</body>
 </html>
+
+<script type="text/javascript">
+    $(document).ajaxError(function (event, jqxhr, settings, thrownError) {
+        $(".page-body").html(jqxhr.responseText);
+    });
+
+    var spinner;
+    spinner = spinner || (function () {
+        var pleaseWaitDiv = $('<div class="modal hide" id="pleaseWaitDialog" data-backdrop="static" data-keyboard="false"><div class="modal-header"><h5>Processing...</h5></div><div class="modal-body"></div></div>');
+        return {
+            showPleaseWait: function () {
+                pleaseWaitDiv.modal();
+            },
+            hidePleaseWait: function () {
+                pleaseWaitDiv.modal('hide');
+            },
+
+        };
+    })();
+    if (window.location.href.toLowerCase().indexOf("itemdetail") !== -1) {
+        spinner.showPleaseWait();
+
+    }
+
+    $(document).ajaxComplete(function () {
+        spinner.hidePleaseWait();
+    });
+    TraceKit.report.subscribe(function (stackInfo) {
+        console.log(stackInfo.name + ' : ' + stackInfo.message);
+        var stack = stackInfo.stack;
+        if (!stack || stack.length === 0) return;
+        if (stack[0].context) {
+            console.log((stack[0].context.join('\n')))
+        }
+        var details = '';
+        for (var i = 0; i < stack.length; i++) {
+            var line = stack[i]
+
+            details += '    at ' + line.func + ' (' + [line.url, line.line, line.column].join(':') + ')';
+        }
+
+        var msg = "Client Script Error:" + stackInfo.name + ' -- ' + stackInfo.message;
+
+        var logMsg = JSON.stringify({ msg: msg, details: details });
+
+
+        $.ajax({
+            url: '/Home/LogException',
+            type: 'POST',
+            dataType: 'json',
+            contentType: 'application/json',
+            data: logMsg,
+            async: false,
+            success: function (data) {
+                console.debug(data);
+            },
+            error: function (data) {
+                console.debug('Logging Error', data);
+            }
+        });
+    });
+
+
+</script>

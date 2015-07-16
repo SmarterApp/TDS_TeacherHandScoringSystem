@@ -48,4 +48,3 @@ ALTER TABLE [dbo].[TeacherDistrictMap] CHECK CONSTRAINT [FK_TeacherDistrictMap_T
 GO
 
 
-

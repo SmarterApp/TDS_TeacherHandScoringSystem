@@ -23,7 +23,15 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-ALTER PROCEDURE [dbo].[sp_GetActivityReport] 
+/*
+	Description: Select some sprocs and calculate occurence and 
+	latency for load evaluation.
+	Author: Aaron
+	DATE:2/3/2015
+
+
+*/
+CREATE PROCEDURE [dbo].[sp_GetActivityReport] 
 	@Day1		DATETIME
 AS BEGIN
 
@@ -43,7 +51,10 @@ INSERT INTO @hoursTable SELECT * FROM (VALUES
 (10), 
 (11), 
 (12), 
-(13) 
+(13), 
+(14), 
+(15), 
+(16) 
 ) AS dayHours (a)
 
 
@@ -63,8 +74,9 @@ insert into @intervals select DateAdd(hour,htime+96,@day1),
 
 -- We query 2 sprocs, one that lists the items and one that 
 -- scores a single assignment, to get an idea.
-select [Day],[Hour],Count(*) as [Views] ,AVG([Duration]) as [AvgDuration] from (
-select [Day]=datename(dw,latency.startdate),
+select [DayNum],[Day],[Hour],Count(*) as [Views] ,AVG([Duration]) as [AvgDuration] from (
+select [DayNum]=DATEPART(day,latency.StartDate),
+       [Day]=datename(dw,latency.startdate),
        [Hour]=DATEPART(hour,latency.StartDate),
        [Duration]=latency.Duration_ms
 from dbo._dbLatency latency 
@@ -72,10 +84,11 @@ join @intervals intervals on intervals.startTime<latency.StartDate
 and intervals.stopTime > latency.EndDate
 where latency.ProcName like 'dbo.sp_GetItemList'
 ) as Q
-group by [Day],[Hour]
+group by [DayNum],[Day],[Hour] order by DayNum,Hour asc
 
-select [Day],[Hour],Count(*) as [Scores],AVG([Duration]) as [AvgDuration]  from (
-select [Day]=datename(dw,latency.startdate),
+select [DayNum],[Day],[Hour],Count(*) as [Scores],AVG([Duration]) as [AvgDuration]  from (
+select [DayNum]=DATEPART(day,latency.StartDate),
+       [Day]=datename(dw,latency.startdate),
        [Hour]=DATEPART(hour,latency.StartDate),
        [Duration]=latency.Duration_ms
 from dbo._dbLatency latency 
@@ -83,7 +96,6 @@ join @intervals intervals on intervals.startTime<latency.StartDate
 and intervals.stopTime > latency.EndDate
 where latency.ProcName like 'dbo.sp_UpdateAssignmentScore'
 ) as Q
-group by [Day],[Hour]
+group by [DayNum],[Day],[Hour] order by DayNum,Hour asc
 
 END
-

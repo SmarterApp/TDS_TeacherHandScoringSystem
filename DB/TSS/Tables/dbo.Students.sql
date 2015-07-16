@@ -1,4 +1,4 @@
-/*
+﻿/*
  /*******************************************************************************                                                                                                                                    
   * Educational Online Test Delivery System                                                                                                                                                                       
   * Copyright (c) 2014 American Institutes for Research                                                                                                                                                              
@@ -19,5 +19,4 @@ CREATE TABLE [dbo].[Students] (
     [TDSLoginId] NVARCHAR (MAX) NULL,
     CONSTRAINT [PK__Students__32C52A7907C12930] PRIMARY KEY CLUSTERED ([StudentID] ASC)
 );
-
 

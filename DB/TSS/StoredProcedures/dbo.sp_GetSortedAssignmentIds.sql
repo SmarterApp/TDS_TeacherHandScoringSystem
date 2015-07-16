@@ -19,18 +19,20 @@ GO
 	Description: Get a sorted list of assignments for a specific educator
 	Author: Aaron
 	DATE:2/3/2015
+	
+	Aaron 3/12 - fixed an issue with width of string for sort column
 
 
 */
 
 CREATE PROCEDURE [dbo].[sp_GetSortedAssignmentIds]
-    @SortColumn		VARCHAR(50) = NULL
+    @SortColumn		VARCHAR(250) = NULL
   ,	@SortDirection	VARCHAR(50) = NULL
   ,	@TeacherId		NVARCHAR(250)
   ,	@TestFilter		VARCHAR(255)
   ,	@SessionFilter	NVARCHAR(500)
-  ,	@GradeFilter	VARCHAR(50)
-  ,	@SubjectFilter	VARCHAR(100)
+  ,	@GradeFilter	VARCHAR(250)
+  ,	@SubjectFilter	VARCHAR(200)
   , @PassPhrase		VARCHAR(100) = NULL
 AS
 BEGIN
@@ -105,11 +107,11 @@ BEGIN
 						  AND ' + @GradeFilterCond + '
 						  AND ' + @SubjectFilterCond + '
 						  AND ''' + @TeacherId+ ''' = a.TeacherId 						  
-						  AND a.ScoreStatus < 2	
+						  AND a.ScoreStatus != 2	
 						  AND (i.HandScored = 1 OR i.HandScored is NULL) 		--should only return hand scorable items
 				    ORDER BY ' + @SortColumn;
 				
-	-- PRINT @SQL
+	 --PRINT @SQL
 	
 	DECLARE @ParamsList NVARCHAR(1000) = N'@TestFilter varchar(255), @SessionFilter nvarchar(500)
 										 , @GradeFilter varchar(50), @SubjectFilter varchar(100),  @PassPhrase varchar(100)'
@@ -131,4 +133,3 @@ BEGIN
 	EXEC dbo.sp_WritedbLatency 'dbo.sp_GetSortedAssignmentIds', @StartDate, @EndDate
 	
 END
-

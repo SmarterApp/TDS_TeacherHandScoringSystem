@@ -77,7 +77,7 @@ namespace SAML.Module
             }
 
             System.Web.Mvc.MvcHandler requestedMvcPage = HttpContext.Current.CurrentHandler as System.Web.Mvc.MvcHandler;
-            if (requestedMvcPage != null && HttpContext.Current.Session["SAMLResponse"] == null && !HttpContext.Current.Request.Url.LocalPath.ToUpper().Contains("/API/"))
+            if (requestedMvcPage != null && (HttpContext.Current.Request.Cookies.Get("HASRUN") == null || HttpContext.Current.Request.Cookies.Get("HASRUN").Value != "true") && !HttpContext.Current.Request.Url.LocalPath.ToUpper().Contains("/API/"))
             {
                 ServiceProviderUtility.Login(HttpContext.Current, HttpContext.Current.Request, Config.ConfigFolder);
             }
@@ -129,7 +129,8 @@ namespace SAML.Module
             //            }
             #endregion
 
-            if (HttpContext.Current.Session["SAMLResponse"] == null)
+            //if (HttpContext.Current.Session["SAMLResponse"] == null)
+            if (HttpContext.Current.Request.Cookies.Get("HASRUN") == null || HttpContext.Current.Request.Cookies.Get("HASRUN").Value != "true")
                 ServiceProviderUtility.Login(HttpContext.Current, requestedPage.Request, Config.ConfigFolder);
 
         }

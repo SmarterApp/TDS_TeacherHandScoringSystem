@@ -91,4 +91,3 @@ BEGIN
 	EXEC dbo.sp_WritedbLatency 'dbo.sp_SaveStudent', @StartDate, @EndDate, @Comment
 		
 END
-

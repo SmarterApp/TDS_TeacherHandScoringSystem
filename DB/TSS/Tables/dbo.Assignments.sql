@@ -48,6 +48,14 @@ CREATE NONCLUSTERED INDEX [assignment_opkey_index] ON [dbo].[Assignments]
 )WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
 GO
 
+-- Required to avoid deadlock when inserting assignments.
+CREATE NONCLUSTERED INDEX [assignment_responseid_index] ON [dbo].[Assignments] 
+(
+	[ResponseID] ASC
+)WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
+GO
+
+drop index [assignment_responseid_index] on assignments
 SET ANSI_PADDING OFF
 GO
 
@@ -85,6 +93,5 @@ GO
 
 ALTER TABLE [dbo].[Assignments] ADD  CONSTRAINT [DF__Assignmen__DateC__0539C240]  DEFAULT (getutcdate()) FOR [DateCreated]
 GO
-
 
 

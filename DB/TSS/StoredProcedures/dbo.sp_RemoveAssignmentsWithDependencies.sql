@@ -9,7 +9,7 @@
   ******************************************************************************/ 
 */
 GO
-/****** Object:  StoredProcedure [dbo].[sp_RemoveAssignmentsWithDependencies]    Script Date: 03/06/2015 14:25:29 ******/
+/****** Object:  StoredProcedure [dbo].[sp_RemoveAssignmentsWithDependencies]    Script Date: 03/23/2015 11:22:17 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -82,7 +82,12 @@ BEGIN
 	JOIN #NotToDelete nodel 
 	ON nodel.OpportunityKey=dep.OpportunityKey
 
-
+    DECLARE @ErrorFlag  BIT	
+	SET @ErrorFlag = 0
+	
+    BEGIN TRANSACTION
+	BEGIN TRY	
+	
 	-- first deleted assignments marked as completed
 	DELETE a
 	FROM dbo.Assignments a
@@ -92,8 +97,18 @@ BEGIN
 	FROM dbo.Assignments a	    
 		JOIN #ScoredOpps depend ON depend.OpportunityKey= a.OpportunityKey
 		
-
+	END TRY
+	BEGIN CATCH
+		ROLLBACK
+		DECLARE @Err NVARCHAR(Max)
+		SET @Err = ERROR_MESSAGE()
+		SET @ErrorFlag = 1
+		EXEC dbo.sp_WritedbLatency 'dbo.sp_RemoveAssignmentsWithDependencies', @StartDate, @EndDate, @Err
+		RETURN
+	END CATCH			
+	COMMIT TRANSACTION
 		
+	SELECT @ErrorFlag -- 0 indicates success; 1 indicates failure	
 	-- clean-up	
 	DROP TABLE #NotToDelete	
 	DROP TABLE #AssignmentList
@@ -104,4 +119,3 @@ BEGIN
 	EXEC dbo.sp_WritedbLatency 'dbo.sp_RemoveAssignmentsWithDependencies', @StartDate, @EndDate
 	
 END
-

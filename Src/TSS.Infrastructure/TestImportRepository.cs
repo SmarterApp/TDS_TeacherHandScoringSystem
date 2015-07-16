@@ -1,14 +1,4 @@
-#region License
-// /*******************************************************************************                                                                                                                                    
-//  * Educational Online Test Delivery System                                                                                                                                                                       
-//  * Copyright (c) 2014 American Institutes for Research                                                                                                                                                              
-//  *                                                                                                                                                                                                                  
-//  * Distributed under the AIR Open Source License, Version 1.0                                                                                                                                                       
-//  * See accompanying file AIR-License-1_0.txt or at                                                                                                                                                                  
-//  * http://www.smarterapp.org/documents/American_Institutes_for_Research_Open_Source_Software_License.pdf                                                                                                                                                 
-//  ******************************************************************************/ 
-#endregion
-#region License
+﻿#region License
 // /*******************************************************************************                                                                                                                                    
 //  * Educational Online Test Delivery System                                                                                                                                                                       
 //  * Copyright (c) 2014 American Institutes for Research                                                                                                                                                              
@@ -113,13 +103,21 @@ namespace TSS.Data
             }
             catch (Exception exp)
             {
-                LoggerRepository.LogException(exp);
+                LoggerRepository.LogException(exp,"Updating TeacherDistrict Relationship to Database Failed");
             }
         }
+
+        /// <summary>
+        ///  imports some tests 
+        /// </summary>
+        /// <param name="xmlInputs"></param>
+        /// <param name="district"></param>
+        /// <returns>true if failed, false if OK </returns>
         public bool BatchProcessAssingmentAndResponse(string xmlInputs,string district)
         {
             SqlCommand command = CreateCommand(CommandType.StoredProcedure, "dbo.sp_SaveAssignmentAndResponses",district);
             command.AddValue("xmlInputs", xmlInputs);
+            command.CommandTimeout = 100; //default is 30 sec
 
             bool rtnCode = true;
             ExecuteReader(command, delegate(IColumnReader reader)
@@ -131,8 +129,7 @@ namespace TSS.Data
                 }
             });
 
-            return rtnCode == false;
+            return rtnCode;
         }
     }
 }
-

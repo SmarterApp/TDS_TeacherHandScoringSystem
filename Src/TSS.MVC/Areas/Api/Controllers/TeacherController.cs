@@ -1,14 +1,4 @@
-#region License
-// /*******************************************************************************                                                                                                                                    
-//  * Educational Online Test Delivery System                                                                                                                                                                       
-//  * Copyright (c) 2014 American Institutes for Research                                                                                                                                                              
-//  *                                                                                                                                                                                                                  
-//  * Distributed under the AIR Open Source License, Version 1.0                                                                                                                                                       
-//  * See accompanying file AIR-License-1_0.txt or at                                                                                                                                                                  
-//  * http://www.smarterapp.org/documents/American_Institutes_for_Research_Open_Source_Software_License.pdf                                                                                                                                                 
-//  ******************************************************************************/ 
-#endregion
-#region License
+﻿#region License
 // /*******************************************************************************                                                                                                                                    
 //  * Educational Online Test Delivery System                                                                                                                                                                       
 //  * Copyright (c) 2014 American Institutes for Research                                                                                                                                                              
@@ -52,12 +42,12 @@ namespace TSS.MVC.Areas.Api.Controllers
 
         public ActionResult GetScorersforReAssign()
         {
+            UserAttributes ua = new UserAttributes();
             try
-            {
-                //GET LIST OF SCORER ROLES
-                List<RoleSet> roles = UserAttributes.SAML.GetListOfRolesThatCanViewItems();
+            {   //GET LIST OF SCORER ROLES
+                List<RoleSet> roles = ua.GetListOfRolesThatCanViewItems();
                 //GET USER'S TENANCIES
-                List<TenancyChain> t = UserAttributes.SAML.TenancyChainList;
+                List<TenancyChain> t = ua.TenancyChainList;
                 //GET ALL SCORERS MATCHING ALL THE USER'S TENANCIES WHERE THE ROLES ARE OF TSS SCORER ROLES
                 var r = _teacherService.GetListOfPossibleScorers(t, roles);
 
@@ -70,11 +60,11 @@ namespace TSS.MVC.Areas.Api.Controllers
             }
             catch (Exception exc)
             {
-                if (Session["SAMLResponse"] == null)
+                if (string.IsNullOrEmpty(ua.TSSUserID))
                 {
                     Response.StatusCode = (int)System.Net.HttpStatusCode.Unauthorized;
                 }
-                LoggerRepository.LogException(exc);
+                LoggerRepository.LogException(exc,"Getting Scorers for Reassign Failed");
                 return Json(new { success = false, data = string.Format("\"Error Code\": \"{0}\"  \"Message\":\"{1}\"", 4004, exc.ToString()) }, JsonRequestBehavior.AllowGet);
             }
         }

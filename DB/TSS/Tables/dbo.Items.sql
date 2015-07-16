@@ -1,4 +1,4 @@
-/*
+﻿/*
  /*******************************************************************************                                                                                                                                    
   * Educational Online Test Delivery System                                                                                                                                                                       
   * Copyright (c) 2014 American Institutes for Research                                                                                                                                                              
@@ -22,5 +22,4 @@ CREATE TABLE [dbo].[Items] (
     [HandScored]       BIT            NULL,
     CONSTRAINT [PK_Items] PRIMARY KEY CLUSTERED ([BankKey] ASC, [ItemKey] ASC)
 );
-
 

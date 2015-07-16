@@ -8,7 +8,7 @@
   * http://www.smarterapp.org/documents/American_Institutes_for_Research_Open_Source_Software_License.pdf                                                                                                                                                 
   ******************************************************************************/ 
 */
-USE [TSS_Debug_1]
+
 GO
 /****** Object:  StoredProcedure [dbo].[sp_UpdateDistrictTeacherRelationship]    Script Date: 02/02/2015 19:19:00 ******/
 SET ANSI_NULLS ON
@@ -38,14 +38,8 @@ BEGIN
 	
 	IF NOT EXISTS (SELECT 1 FROM dbo.TeacherDistrictMap WHERE  TeacherID = @TeacherId
 	   and DistrictID = @DistrictId)
-	BEGIN
-	    IF EXISTS (select 1 from dbo.Teachers where TeacherID = @TeacherId)
-	    BEGIN
-    	    IF EXISTS (select 1 from dbo.Districts where DistrictID = @DistrictID)
-    	    BEGIN
-    	        Insert into dbo.TeacherDistrictMap values (@DistrictId,@TeacherId)
-    	    END
-	    END
+	BEGIN	  
+    	 Insert into dbo.TeacherDistrictMap values (@DistrictId,@TeacherId)    	 
   	END
 	
 	SELECT @ErrorFlag -- 0 indicates success; 1 indicates failure
@@ -55,6 +49,5 @@ BEGIN
 	EXEC dbo.sp_WritedbLatency 'dbo.sp_UpdateDistrictTeacherRelationship', @StartDate, @EndDate
 	           
 END
-
 
 

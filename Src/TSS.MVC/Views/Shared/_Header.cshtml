@@ -1,15 +1,15 @@
-﻿@{
+﻿@using TSS.MVC
+@{
     ViewBag.LogoutURL = Request.Cookies["LogoutURL"] != null ? Request.Cookies["LogoutURL"].Value : "https://drc-dev-secure.opentestsystem.org/auth/UI/Logout";
     try
     {
-        ViewBag.GivenName = TSS.MVC.UserAttributes.SAML.Mail;
+        TSS.MVC.UserAttributes ua = new UserAttributes();
+        ViewBag.Loginuser = ua.TSSUserID;
+        ViewBag.GivenName = ua.TSSUserID;
     }catch
     {
+        ViewBag.Loginuser = "";
         ViewBag.GivenName = "";
-        if (HttpContext.Current.Request.Cookies.Get("TSS-MAIL") != null)
-        {
-            ViewBag.GivenNalme = TSS.MVC.Encryption.SimpleDecrypt(HttpContext.Current.Request.Cookies.Get("TSS-MAIL").Value, "45AC7AE85F63E668", "B262ACF431AD96F4", 0);
-        }
     }
     ViewBag.HdrOpenAmSites = new TSS.MVC.Models.OpenamSiteModel().DropdownInfo;      
 }
