@@ -22,8 +22,7 @@ This project is licensed under the [AIR Open Source License v1.0](http://www.sma
 ## Getting Involved ##
 We would be happy to receive feedback on its capabilities, problems, or future enhancements:
 
-* For general questions or discussions, please use the [Forum](http://forum.opentestsystem.org/viewforum.php?f=21).
-* Use the **Issues** link to file bugs or enhancement requests.
+* For general questions or discussions, please use the [Forum](http://forum.smarterbalanced.org/viewforum.php?f=21).
 * Feel free to **Fork** this project and develop your changes!
 
 ## Usage 
@@ -158,7 +157,7 @@ Per instance application configuration settings can be found in the following fi
 * `<root>\Src\TSS.MVC\App_Data\fedlet.cot` *
 * `<root>\Src\TSS.MVC\App_Data\reportxml_os.xsd`
 
-\* These are all required to work with Open AM, but will differ with every deployment. Please refer to Open AM documentation for generating and configuring these documents.
+\* These are all required to work with Open AM, but will differ with every deployment. Please refer to Open AM documentation for generating and configuring these documents. Guidance in creating these five files can be found on Oracleâ€™s website documenting the use of [OpenSSO and ASP.NET](https://docs.oracle.com/cd/E19575-01/821-1818/gjvia/index.html). The OpenSSO Enterprise download includes template files with placeholders for fedlet.cot, idp- extended.xml, sp-extended.xml, and sp.xml.
 
 #### Additional Config information
 	
@@ -285,7 +284,7 @@ The Teacher Hand Scoring System has not undergone a complete system testing or i
 ### 6/30/2015
 1. Enhanced exception handling, including client-side JavaScript error handling, enhanced error messages, having trace/activity logs and error logs stored into different database tables.
 2. Removed duplicated license header information. Somehow, the C# code files in BB contain duplicated license header.
-3. Moved server side session variables to cookies. In order to deploy THSS to a web farm, previously, the sticky session was required to be on so that different web servers could share session variables. After this change, the sticky session doesn’t need to be on so to better the web server performance.
+3. Moved server side session variables to cookies. In order to deploy THSS to a web farm, previously, the sticky session was required to be on so that different web servers could share session variables. After this change, the sticky session doesnï¿½t need to be on so to better the web server performance.
 4. Code-refactored with UserAttribute class attributes.
 5. Loaded User Permissions definition through singleton, so that a web request to permission server is only fired once.
 6. Increased sql command time-out for persisting test responses from a large test xml file to database. 
