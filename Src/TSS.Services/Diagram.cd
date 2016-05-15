@@ -1,0 +1,113 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="TSS.Services.ComponentRegistrar">
+    <Position X="11.75" Y="3.5" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAIAAgAAAAAAAQAAAAAAAAAAAAAAgAAAAgAAAAAAAAA=</HashCode>
+      <FileName>ComponentRegistrar\ComponentRegistrar.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TSS.Services.ConfigService">
+    <Position X="12.75" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAQAA=</HashCode>
+      <FileName>ConfigService\ConfigService.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="TSS.Services.EmailService">
+    <Position X="8" Y="0.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Email\EmailService.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="TSS.Services.EmailValidator">
+    <Position X="10" Y="0.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Email\EmailValidator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TSS.Services.EmailNotificationService">
+    <Position X="11.75" Y="0.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAIAQAAAIAADAAAAAAAAAAAI=</HashCode>
+      <FileName>NotificationService\EmailNotificationService.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="TSS.Services.ValidationDictionary">
+    <Position X="8" Y="2.25" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAQAAAAgABAAAAAAAAQAAAAAAAAAgAAA=</HashCode>
+      <FileName>Validation\ValidationDictionary.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TSS.Services.ValidationError">
+    <Position X="8" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIABAAAA=</HashCode>
+      <FileName>Validation\ValidationError.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Interface Name="TSS.Services.ILogService">
+    <Position X="5.75" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAgAAAAAAAAAAAAEAAAAAQAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>LogService\ILogService.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="TSS.Services.IMapperService">
+    <Position X="13.5" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>MapperService\IMapperService.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="TSS.Services.INotificationService">
+    <Position X="13.5" Y="0.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAA=</HashCode>
+      <FileName>NotificationService\INotificationService.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="TSS.Services.IUserService">
+    <Position X="5.25" Y="0.75" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>UserService\IUserService.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="TSS.Services.IAssignmentService">
+    <Position X="3.5" Y="0.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAACBAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>AssignmentService\IAssignmentService.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="TSS.Services.ITeacherService">
+    <Position X="3.5" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>TeacherService\ITeacherService.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="TSS.Services.IContentService">
+    <Position X="3.5" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAEAA=</HashCode>
+      <FileName>ContentService\IContentService.cs</FileName>
+      <NewMemberFileName>TestService\ITestService.cs</NewMemberFileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="TSS.Services.ITestService">
+    <Position X="5.75" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAAAAAAAAAAAAABAACAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>TestService\ITestService.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

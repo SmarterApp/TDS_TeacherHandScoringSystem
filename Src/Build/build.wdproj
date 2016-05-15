@@ -1,0 +1,58 @@
+<!-- 
+  Microsoft Visual Studio 2010 Web Deployment Project 
+  http://go.microsoft.com/fwlink/?LinkID=104956
+
+-->
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>10.0.30319</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{00000000-0000-0000-0000-000000000000}</ProjectGuid>
+    <SourceWebPhysicalPath>..\TSS.MVC</SourceWebPhysicalPath>
+    <SourceWebProject>{D573F189-ACB1-4C29-B209-7F9F56E9048E}|TSS.MVC\TSS.MVC.csproj</SourceWebProject>
+    <SourceWebVirtualPath>/TSS.MVC.csproj</SourceWebVirtualPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>.\Debug</OutputPath>
+    <EnableUpdateable>true</EnableUpdateable>
+    <UseMerge>true</UseMerge>
+    <SingleAssemblyName>TSS.MVC.Deploy</SingleAssemblyName>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugSymbols>false</DebugSymbols>
+    <OutputPath>.\Release</OutputPath>
+    <EnableUpdateable>true</EnableUpdateable>
+    <UseMerge>true</UseMerge>
+    <SingleAssemblyName>TSS.MVC.Deploy</SingleAssemblyName>
+  </PropertyGroup>
+  
+  <ItemGroup>    
+    <ExcludeFromBuild Include="$(SourceWebPhysicalPath)\**\CVS\**\*.*" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\TSS.MVC\TSS.MVC.csproj">
+      <Project>{D573F189-ACB1-4C29-B209-7F9F56E9048E}</Project>
+      <Name>TSS.MVC</Name>
+    </ProjectReference>
+  </ItemGroup>
+  
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\WebDeployment\v10.0\Microsoft.WebDeployment.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.WebDeployment.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="BeforeMerge">
+  </Target>
+  <Target Name="AfterMerge">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

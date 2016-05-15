@@ -1,0 +1,45 @@
+﻿<table class="table table-striped table-condensed" id="itemRepositoryTable">
+    <thead>
+        <tr>
+            <th>Item ID</th>
+            <th>Bank ID</th>
+            <th>Exemplar</th>
+            <th>Training Guide</th>
+            <th>Rubric</th>
+            <th>Minimum Points</th>
+            <th>Maximum Points</th>
+            <th>Condition Codes</th>
+            <th>Dimensional Scoring</th>
+            <th>Last Modified</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{#RepositoryItems/RepositoryItem}}
+        <tr>
+            <td>{{ItemID}}</td>
+            <td>{{BankID}}</td>
+            <td>{{Exemplar}}</td>
+            <td>{{TrainingGuide}}</td>
+            <td>{{Layout}}</td>
+            <td>{{Rubric}}</td>
+            <td>{{MinPoints}}</td>
+            <td>{{MaxPoints}}</td>
+            <td>{{ConditionCodes}}</td>
+            <td>{{DimensionalScoring}}</td>
+            <td>{{LastModified}}</td>
+            <td>
+                <div id="itemRepoTableButtons">
+                    <!--TODO: Change button actions in controller-->
+                    <form action="ItemRepositoryAdd.html" method="get">
+                        <input type="submit" value="Edit" name="Edit" id="itemTableEditbtn" />
+                    </form>
+                    <form action="ItemRepositoryAdd.html" method="get">
+                        <input type="submit" value="Delete" name="Add Item" id="itemTableDeletebtn" />
+                    </form>
+                </div>
+            </td>
+        </tr>
+        {{/RepositoryItems/RepositoryItem}}
+    </tbody>
+</table>

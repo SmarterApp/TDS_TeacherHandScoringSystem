@@ -1,0 +1,57 @@
+﻿@using TSS.MVC
+@{
+    ViewBag.Title = "Home";
+    Layout = "_Layout.cshtml";
+    try
+    {
+        TSS.MVC.UserAttributes ua = new UserAttributes();
+        ViewBag.Loginuser = ua.TSSUserID;
+    }
+    catch
+    {
+        ViewBag.Loginuser = null;
+    }
+}
+
+@if (ViewBag.Loginuser != null)
+{
+    <h2>Loading...</h2>
+    <script>
+        window.location.href = "/Home/ItemList";
+    </script>
+}
+else
+{
+    <div id="useraccess" title="Access Denied">
+        @if (System.Configuration.ConfigurationManager.AppSettings["ACCESS_DENIED"] != null)
+        {
+            @System.Configuration.ConfigurationManager.AppSettings["ACCESS_DENIED"].ToString();
+        }
+
+    </div>
+    <script type="text/javascript">
+        $("#useraccess").dialog({
+            resizable: false,
+            height: 200,
+            width: 250,
+            modal: true,
+            dialogClass: 'dlgfixed',
+            position: "center",
+            overlay: { display: 'none', opacity: 0 },
+            autoOpen: true,
+            buttons: {
+                "OK": function () {
+                    $("#btnLogout").trigger("click");
+                }
+            }
+        });
+        $(".dlgfixed").center(true);
+        $(".ui-widget-overlay").css("z-index", "9");
+
+        $("#airlogo").on("click", function (event) {
+            $("#btnLogout").trigger("click");
+            event.preventDefault();
+        });
+
+    </script>
+}

@@ -1,0 +1,257 @@
+﻿@using System.Text.RegularExpressions
+@using TSS.MVC.Models
+@model ItemDetailViewModel
+
+<div class="ItemDetailPageHeader">
+    <span class="ItemDetailHeader"><label>Item @Html.DisplayTextFor(model => model.ItemKey): </label>@Html.DisplayTextFor(model => model.ItemDesc) </span>
+    <span class="ItemDetailTitle"><label>@Html.LabelFor(model => model.ScoreStatus, new { @class = "ItemDetailTitleHeader" }): </label><span id="ScoreStatus">@Html.DisplayFor( model => model.ScoreStatus)</span> </span>
+    <span class="ItemDetailTitle"><label>@Html.LabelFor(model => model.Test, new { @class = "ItemDetailTitleHeader" }): </label>@Html.DisplayTextFor(model => model.Test) </span>
+    <span class="ItemDetailTitle"><label>@Html.LabelFor(model => model.Session, new { @class = "ItemDetailTitleHeader" }): </label>@Html.DisplayTextFor(model => model.Session) </span>
+    <span class="ItemDetailTitle"><label>@Html.LabelFor(model => model.StudentName, new { @class = "ItemDetailTitleHeader" }): </label>@Html.DisplayTextFor(model => model.StudentName)</span>
+
+</div>
+    @Html.HiddenFor(model => model.AssignedAssignmentId)
+    @Html.HiddenFor(model => model.NumberOfDimensions)
+<div class="rubric-table" >
+	<div class="rubric-table-link-tab">
+		<span class="alignLeft">Rubric</span>	
+		<span class="alignRight"><a href="@Model.TrainingGuideUrl" target="_blank">Training Guides</a></span>
+        <span class="alignRight"><a href="@Model.ExemplarUrl" target="_blank" >Exemplar</a></span>
+	</div>
+    <div class="rubric-table-detail">
+        
+    @*<table class="rubric-table">
+        <tr>
+            <td class="rubric-space rubric-table-link-borders">&nbsp;</td>
+            <td class="rubric-table-link-tab">Rubric
+            </td>
+            <td class="tableSpace rubric-table-link-borders">&nbsp;</td>
+            <td style="width: 50px;" class="rubric-table-link-borders">
+                <a class="detailHeader" href="@Model.ExemplarUrl" target="_blank">Exemplar</a>
+            </td>
+            <td class="tableSpace rubric-table-link-borders">&nbsp;</td>
+            <td class="rubric-table-link-borders">
+                <a class="detailHeader" href="@Model.TrainingGuideUrl" target="_blank">Training Guides</a>
+            </td>
+            <td class="rubric-table-link-borders" style="width: 800px;">&nbsp;</td>
+        </tr>
+        <tr>
+            <td class="rubric-cell" colspan="7">
+                <div class="detail-rubric">
+                    <table>
+                        <tr id="rubricRow">
+                            <td>
+                                <table class="rubricTable">
+                                    <tr>
+                                        <td>*@
+                                            <table id="criteriaTable" class="criteriaTable dataTable">
+                                                <thead>
+                                                    <tr>
+                                                        <th class="hide-control">ID</th>
+                                                        <th class="criteriaColumn hide-control">Rubric</th>
+                                                        <th>Description</th>
+                                                        <th>Points</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @for (int i = 0; i < Model.RubricList.Count; i++)
+                                                    {
+
+                                                        <tr id="Row-@Model.RubricList[i].RubricScorePoint" class="criteria-cell">
+                                                            <td class="hide-control">@Html.DisplayFor(m => m.RubricList[i].RubricScorePoint)</td>
+                                                            <td class="hide-control">@Html.DisplayFor(m => m.RubricList[i].RubricName)</td>
+                                                            <td>@Html.Raw(Model.RubricList[i].RubricDescription.ToString())</td>
+                                                            <td>@Html.DisplayFor(m => m.RubricList[i].MaxVal)</td>
+                                                        </tr>                                            
+                                                    }
+                                                </tbody>
+                                            </table>
+                                       @* </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr id="dimensionRow">
+                            <td>
+                                <table class="rubricTable">
+                                    <tr>
+                                        <td>*@
+                                            <table id="dimensionTable" class="criteriaTable dataTable">
+                                                <thead>
+                                                    <tr>
+                                                        <th class="hide-control">ID</th>
+                                                        <th class="criteriaColumn">Scoring Criteria</th>
+                                                        <th>Points</th>
+                                                        <th>Score</th>
+                                                        <th>Condition Code</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @for (int i = 0; i < Model.ItemDimensions.Count; i++)
+                                                    {
+
+                                                        <tr id="Row-@i.ToString()" class="criteria-cell">
+                                                            <td class="hide-control">@i.ToString()</td>
+                                                            <td id="Dim_@i.ToString()">@Html.DisplayFor(m => m.ItemDimensions[i].Dimension)</td>
+                                                            <td>@Html.DisplayFor(m => m.ItemDimensions[i].Points)</td>
+                                                            <td>
+                                                                <input class="NumberControl" type="number" step="1" id="Number_@i.ToString()" value="@Model.ItemDimensions[i].Score" max="@Model.ItemDimensions[i].Points" min="@Model.ItemDimensions[i].Minval" />
+                                                            </td>
+                                                            <td>
+                                                                @Html.DropDownListFor(m => m.ItemDimensions[i].ConditionCode, Model.ItemDimensions[i].ConditionCodes, "Not Applicable")
+                                                            </td>
+                                                        </tr>                                            
+                                                    }
+                                                </tbody>
+                                            </table>
+
+        </div>
+                                        @*</td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </td>
+        </tr>
+    </table>*@
+</div>
+
+<script type="text/javascript">
+    
+    window.loadBlackbox = function () {
+        try
+        {
+            IRiS.setFrame(frames[0]);
+            var response = '@Html.Raw(System.Text.RegularExpressions.Regex.Replace(Model.Response, @"\t|\n|\r", "").Replace("\"", "&quot;").Replace("\'", "&#39;"))';
+            var items = '@Html.Raw(Model.ContentToken)';
+            IRiS.loadToken('@Model.VendorId', items).done(function () {
+            console.log("Setting response: " + response);
+            if (response) IRiS.setResponse(response);
+        }).fail(function () {
+            // alert("Failed to set student response.");
+        });
+         //IRiS.setFrame(frames[0]);
+        }
+        catch (e) {
+            TraceKit.report(e);
+        }
+   };
+    
+    function getParameterByName(name) {
+
+        name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+        var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+            results = regex.exec(location.search);
+        return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+
+    }
+    //START VALIDATION METHODS
+    function DisplayScoreValidationMessage(element, msg) {
+        var errorDiv = $('<div class="scoreValidationMessage" style="color:red;font-size:12px;font-style:italic;margin-top:-8px;"></div>');
+
+        if (element.next('.scoreValidationMessage').length > 0)
+            element.next('.scoreValidationMessage').remove();
+
+        errorDiv.append(msg);
+        element.after(errorDiv);
+        setTimeout(function () {
+            errorDiv.fadeOut("slow", function () {
+                errorDiv.remove();
+            });
+        }, 1500);
+    }
+
+    function OnConditionChange() {
+        //Disable text entry for responses with a condition code.   
+        //count rows
+        var dimensionalScoreRowCount = $("#dimensionTable tbody tr").length;
+        for (var i = 0; i < dimensionalScoreRowCount; i++) {
+            //get values
+            var txtbx = $("#Number_" + i);
+            var select = $("#ItemDimensions_" + i + "__ConditionCode").val();
+
+            if (select != 0) {
+                txtbx.prop("disabled", true);
+            }
+            else {
+                txtbx.prop("disabled", false);
+            }
+        }
+    }
+
+    function CheckScoreConditionInputs() {
+        //count rows
+        var dimensionalScoreRowCount = $("#dimensionTable tbody tr").length;
+        for (var i = 0; i < dimensionalScoreRowCount; i++) {
+            //get values
+            var txtbx = $("#Number_" + i);
+            var txtbxVal = txtbx.val();
+            var txtbxMin = parseInt(txtbx.attr("min"));
+            var txtbxMax = parseInt(txtbx.attr("max"));
+            var selec = $("#ItemDimensions_" + i + "__ConditionCode");
+            var msg = "";
+
+            //set error message
+
+            if (txtbxVal.length > 2) {
+                msg = "Value length should be only two digits";
+                txtbx.val("");
+            }
+
+            if (txtbxVal !== "" && txtbxVal < txtbxMin)
+                msg = "Value must be greater than " + (txtbxMin - 1);
+
+            if (txtbxVal !== "" && txtbxVal > txtbxMax)
+                msg = "Value must be less than " + (txtbxMax + 1);
+
+            var reg = /^\d+$/;
+            if (txtbxVal !== "" && !reg.test(txtbxVal)) {
+                msg = "Value must be a whole number";
+                txtbx.val("");
+            }
+
+            if (msg != "")
+                DisplayScoreValidationMessage(txtbx, msg);
+            msg = "";
+
+            //CLEAR OUT LETTERs AND VAlUES THAT ARE TOO HIGH OR TOO LOW
+            if (txtbxVal === "" || txtbxVal < txtbxMin || txtbxVal > txtbxMax) {//LETTERS ARE RETURNED AS A BLANK VALUE
+                txtbx.val("");//CLEAR VALUE
+            }
+
+
+            //TURN SELECT ON AND OFF
+            if (txtbxVal != "") {
+                if (selec.find('option').length > 0) {
+                    selec.val($(selec.find('option')[0]).val());
+                }
+                selec.prop("disabled", true);
+            }
+            else {
+                selec.prop("disabled", false);
+            }
+
+
+        }
+    }
+    //ON CONDITION CODE CHANGE
+    $('[id^="ItemDimensions"][id$="__ConditionCode"]').on("change", function () {
+        OnConditionChange();
+    });
+    //ON SCORE ONCHANGE
+    $('[id^="Number_"]').on("keyup mouseup", function () {
+        CheckScoreConditionInputs();
+    });
+
+    $('[id^="Number_"]').on("blur", function () {
+        CheckScoreConditionInputs();
+    });
+    
+    $(function () {
+        CheckScoreConditionInputs();
+        OnConditionChange();
+    });
+</script>
+
