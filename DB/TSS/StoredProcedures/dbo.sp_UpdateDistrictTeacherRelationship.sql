@@ -17,7 +17,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 
-ALTER PROCEDURE [dbo].[sp_UpdateDistrictTeacherRelationship] 
+CREATE PROCEDURE [dbo].[sp_UpdateDistrictTeacherRelationship] 
     @TeacherId		VARCHAR(100)
   , @DistrictId     VARCHAR(250)
 AS

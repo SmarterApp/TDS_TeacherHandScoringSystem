@@ -76,9 +76,6 @@ BEGIN
 	    
     IF(ISNULL(@SortColumn, '') = 'StudentName')
     BEGIN 
-	  IF (@PassPhrase IS NOT NULL) 
-		SET @SortColumn = 'dbo.fn_DecryptValue(@PassPhrase, s.Name)' + ' ' + @SortDirection+ ', ' + 'a.AssignmentId ASC'
-	  ELSE 
 	    SET @SortColumn = 's.FirstName + '' '' + s.LastName' + ' ' + @SortDirection+ ', ' + 'a.AssignmentId ASC'
 	END 
 	

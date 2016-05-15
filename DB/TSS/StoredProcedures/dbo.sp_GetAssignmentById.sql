@@ -35,7 +35,7 @@ BEGIN
 		 , a.TestID
 		 , r.Response
 		 , t.Name			AS TestName
-		 , CASE WHEN @PassPhrase IS NOT NULL THEN dbo.fn_DecryptValue(@PassPhrase, st.Name) ELSE (st.FirstName + ' ' + st.LastName) END AS StudentName		 
+		 , st.FirstName + ' ' + st.LastName AS StudentName		 
 		 , i.ItemKey
 		 , i.BankKey
 		 , i.HandScored

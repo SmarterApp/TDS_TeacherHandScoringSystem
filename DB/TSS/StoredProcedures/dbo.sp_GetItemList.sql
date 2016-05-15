@@ -89,16 +89,8 @@ BEGIN
 
     IF(ISNULL(@SortColumn, '') = 'StudentName')
     BEGIN 
-	  IF (@PassPhrase IS NOT NULL) 
-	  BEGIN
-	    SET @SortColumn = 'StudentName'+ ' ' + @SortDirection
-		SET @RowNumSortColumn = 'dbo.fn_DecryptValue(@PassPhrase, s.Name)'+ ' ' + @SortDirection + ', ' + 'AssignmentId ASC'
-		END
-	  ELSE 
-	  BEGIN
 	    SET @SortColumn = 'StudentName' + ' ' + @SortDirection
 	    SET @RowNumSortColumn = 's.FirstName + '' '' + s.LastName'+ ' ' + @SortDirection + ', ' + 'AssignmentId ASC'
-	    END
 	END 
 	
 	DECLARE @TestFilterCond		VARCHAR(500)
@@ -123,7 +115,7 @@ BEGIN
 						 , a.ScoreStatus
 						 , i.ItemKey
 						 , i.Description								AS ItemTypeDescription
-						 , CASE WHEN @PassPhrase IS NOT NULL THEN dbo.fn_DecryptValue(@PassPhrase, s.Name) ELSE (s.FirstName + '' '' + s.LastName) END AS StudentName
+						 , s.FirstName + '' '' + s.LastName AS StudentName
 						 , a.AssignmentId
 						 , te.TeacherID									AS TeacherUUID 
 					FROM dbo.Assignments a (NOLOCK)
