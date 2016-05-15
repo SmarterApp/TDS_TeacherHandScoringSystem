@@ -152,12 +152,16 @@ Per instance application configuration settings can be found in the following fi
 		
 * `<root>\Src\TSS.MVC\App_Data\sp.xml` *
 * `<root>\Src\TSS.MVC\App_Data\sp-extended.xml` *
-* `<root>\Src\TSS.MVC\App_Data\idp.xml` *
+* `<root>\Src\TSS.MVC\App_Data\idp.xml` * This file will be downloaded from OpenAM by going to the following URL: https://[SSO_URL]/auth/(TODO: find proper URL)
 * `<root>\Src\TSS.MVC\App_Data\idp-extended.xml` *
 * `<root>\Src\TSS.MVC\App_Data\fedlet.cot` *
 * `<root>\Src\TSS.MVC\App_Data\reportxml_os.xsd`
 
-\* These are all required to work with Open AM, but will differ with every deployment. Please refer to Open AM documentation for generating and configuring these documents. Guidance in creating these five files can be found on Oracle’s website documenting the use of [OpenSSO and ASP.NET](https://docs.oracle.com/cd/E19575-01/821-1818/gjvia/index.html). The OpenSSO Enterprise download includes template files with placeholders for fedlet.cot, idp- extended.xml, sp-extended.xml, and sp.xml.
+\* These are all required to work with Open AM, and will differ with every deployment. These files include the following placeholders which must be updated:
+
+* [THSS_BASE_URL]: Base URL of this instance you are setting up
+* [CIRCLE_OF_TRUST_NAME]: Name of the circle of trust setup in OpenAM.  This will be "sbac" if you are following the quick start deployment guide.
+* [SSO_URL]: Base URL of the OpenAM instance you are using
 
 #### Additional Config information
 	
