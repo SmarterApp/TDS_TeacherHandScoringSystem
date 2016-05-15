@@ -53,20 +53,20 @@ Create an App User account and grant that account dbo access on the above DBs. [
 
 4) Deploy the `[Db server].TSS` database objects by running the following scripts in order: [DB server]
 
-* `<root>\Src\DB\TSS\Tables\dbo.ConditionCodes.sql`
-* `<root>\Src\DB\TSS\Tables\dbo.Dimensions.sql`
-* `<root>\Src\DB\TSS\Tables\dbo.Items.sql`
-* `<root>\Src\DB\TSS\Tables\dbo.Districts.sql`
-* `<root>\Src\DB\TSS\Tables\dbo.Schools.sql`
-* `<root>\Src\DB\TSS\Tables\dbo.Students.sql`
-* `<root>\Src\DB\TSS\Tables\dbo.Teachers.sql`
-* `<root>\Src\DB\TSS\Tables\dbo.Tests.sql`
-* `<root>\Src\DB\TSS\Tables\dbo.Responses.sql`
-* `<root>\Src\DB\TSS\Tables\dbo.Assignments.sql`
-* `<root>\Src\DB\TSS\Tables\dbo.Logs.sql`
-* `<root>\Src\DB\TSS\Tables\dbo._dbLatency.sql`
-* `<root>\Src\DB\TSS\Functions\dbo.fn_SplitDelimitedString.sql`
-* `<root>\Src\DB\TSS\StoredProcedures\*.sql`
+* `<root>\DB\TSS\Tables\dbo.Items.sql`
+* `<root>\DB\TSS\Tables\dbo.Dimensions.sql`
+* `<root>\DB\TSS\Tables\dbo.ConditionCodes.sql`
+* `<root>\DB\TSS\Tables\dbo.Districts.sql`
+* `<root>\DB\TSS\Tables\dbo.Schools.sql`
+* `<root>\DB\TSS\Tables\dbo.Students.sql`
+* `<root>\DB\TSS\Tables\dbo.Teachers.sql`
+* `<root>\DB\TSS\Tables\dbo.Tests.sql`
+* `<root>\DB\TSS\Tables\dbo.Responses.sql`
+* `<root>\DB\TSS\Tables\dbo.Assignments.sql`
+* `<root>\DB\TSS\Tables\dbo.Logs.sql`
+* `<root>\DB\TSS\Tables\dbo._dbLatency.sql`
+* `<root>\DB\TSS\Functions\dbo.fn_SplitDelimitedString.sql`
+* `<root>\DB\TSS\StoredProcedures\*.sql`
 
 
 5) Deploy TSS.MVC code at `thss_opentestsystem` [Web server]
