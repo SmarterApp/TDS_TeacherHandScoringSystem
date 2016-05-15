@@ -340,7 +340,6 @@
     <Content Include="Images\back_disabled.png" />
     <Content Include="Images\back_enabled.png" />
     <Content Include="Images\back_enabled_hover.png" />
-    <Content Include="Images\favicon.ico" />
     <Content Include="Images\favicon.png" />
     <Content Include="Images\forward_disabled.png" />
     <Content Include="Images\forward_enabled.png" />
