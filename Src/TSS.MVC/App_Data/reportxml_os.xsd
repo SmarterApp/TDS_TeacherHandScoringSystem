@@ -171,6 +171,7 @@
                   where it cannot be calculated correctly and we get a negative value.  -->
 									<xs:attribute name="pageTime" use="required" type="xs:int" />
 									<xs:attribute name="dropped" use="required" type="Bit" />
+                  <xs:attribute name="responseDuration" use="required" type="UFloat" />
 								</xs:complexType>
 							</xs:element>
 						</xs:sequence>
@@ -198,6 +199,8 @@
 								</xs:restriction>
 							</xs:simpleType>
 						</xs:attribute>
+            <xs:attribute name="completeStatus" type="xs:token" />
+            <xs:attribute name="administrationCondition" type="xs:token" />
 						<xs:attribute name="opportunity" use="required" type="xs:unsignedInt" />
 						<xs:attribute name="statusDate" use="required" type="xs:dateTime" />
 						<xs:attribute name="dateCompleted" type="NullableDateTime" />
