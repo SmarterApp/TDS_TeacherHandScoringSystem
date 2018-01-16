@@ -58,5 +58,9 @@ namespace TSS.Services
         {
             repo.UpdateItemTypes(ItemTypes);
         }
+        public void DeleteItemTypes(int bankKey, string itemKeys)
+        {
+            repo.DeleteItemTypes(bankKey, itemKeys);
+        }
     }
 }

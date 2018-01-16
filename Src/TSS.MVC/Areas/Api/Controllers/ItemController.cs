@@ -291,5 +291,29 @@ namespace TSS.MVC.Areas.Api.Controllers
             }
             return Json(apiResult);
         }
+        /// <summary>
+        /// Delete an assessment from THSS.
+        /// api/item/delete?bankKey={bankKey}&itemKeys={itemKey1,itemKey2,...}
+        /// </summary>
+        /// <param name="bankKey">BankKey of the list of items to delete</param>
+        /// <param name="itemKeys">Comma delemited list of item keys to delete</param>
+        [System.Web.Mvc.HttpDelete] 
+        public ActionResult Delete(int bankKey, string itemKeys)
+        {
+            var apiResult = new ItemDeleteApiResultModel();
+            apiResult.BankKey = bankKey;
+            apiResult.ItemKeys = itemKeys;
+            try
+            {
+                ItemConfigSingleton.Instance.DeleteItemTypes(bankKey, itemKeys);
+            }
+            catch (Exception exp)
+            {
+                LoggerRepository.LogException(exp);
+                apiResult.Success = false;
+                apiResult.ErrorMessage = exp.Message;
+            }
+            return Json(apiResult);
+        }
     }
 }
