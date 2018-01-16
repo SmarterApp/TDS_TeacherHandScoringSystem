@@ -183,6 +183,14 @@ namespace TSS.Data
             UpdateSql(dimsModified, "[dbo].[sp_UpdateDimensions]");
             UpdateSql(codesModified, "[dbo].[sp_UpdateCodes]");
         }
+        public void DeleteItemTypes(int bankKey, string itemKeys)
+        {
+            SqlCommand command = CreateCommand(CommandType.StoredProcedure,
+                                   "[dbo].[sp_DeleteItems]", "Default");
+            command.Parameters.AddWithValue("@BankKey", bankKey);
+            command.Parameters.AddWithValue("@ItemKeyList", itemKeys);
+            ExecuteNonQuery(command);
+        }
     }
 }
 
