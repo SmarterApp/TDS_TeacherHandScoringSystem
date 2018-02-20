@@ -305,7 +305,17 @@ namespace TSS.MVC.Areas.Api.Controllers
             apiResult.ItemKeys = itemKeys;
             try
             {
+                string[] itemKeyArray = itemKeys.Split(',');
+                List<ItemType> itemTypes = ItemConfigSingleton.Instance.LoadItemTypes();
+                foreach (var itemKeyString in itemKeyArray)
+                {
+                    var itemKey = 0;
+                    Int32.TryParse(itemKeyString, out itemKey);
+                    // remove existing item in cache
+                    itemTypes.RemoveAll(i => i.BankKey == bankKey && i.ItemKey == itemKey);
+                }
                 ItemConfigSingleton.Instance.DeleteItemTypes(bankKey, itemKeys);
+                apiResult.Success = true;
             }
             catch (Exception exp)
             {
