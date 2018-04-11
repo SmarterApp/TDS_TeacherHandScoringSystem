@@ -28,6 +28,7 @@ namespace TSS.MVC.Areas.Api.Controllers
 {
     public class ItemController : BaseController
     {
+        static string BASE_URL = Path.GetFullPath(@"Item-Manager\OH_ Items");
 
         private readonly IStudentResponseService _studentResponseService;
 
@@ -162,6 +163,39 @@ namespace TSS.MVC.Areas.Api.Controllers
             }
         }
 
+        // Return the default name of the training guide/exemplar
+        private string GetDefaultFileName(int itemId, string fileType)
+        {
+            return string.Format("G3_{0}_{1}.pdf", itemId, fileType);
+        }
+
+        // Prepend the default root location to the filename to make it an absolute path.
+        private string GetAbsoluteFileLocation(string baseUrl, string fileName)
+        {            
+            return Path.Combine(baseUrl, fileName);
+        }
+
+        // Returns file location of the training guide/exemplar if the configuration value is not specified
+        private string GetDefaultFileLocation(string baseUrl, int itemId, string fileType)
+        {
+            return GetAbsoluteFileLocation(baseUrl, GetDefaultFileName(itemId, fileType));
+        }
+
+        // Returns file location based on training guide/exemplar configuration value
+        //
+        // Use the configuration value as is if it is an absolute path.
+        // Otherwise prepend the default root location to the value to make it an absolute path.
+        private string GetFileLocation(string baseUrl, string fileName)
+        {
+            if (Path.IsPathRooted(fileName))
+            {
+                return fileName;
+            } else
+            {
+                return GetAbsoluteFileLocation(baseUrl, fileName);
+            }
+        }
+
         // TODO: POST api/item/submit  add a configurationRepository
         [System.Web.Mvc.HttpPost]
         public ActionResult Submit()
@@ -199,17 +233,7 @@ namespace TSS.MVC.Areas.Api.Controllers
                             {
                                 // load existing item to update if it exists
                                 var itemType = itemTypes.SingleOrDefault(i => i.BankKey == obj.bankKey && i.ItemKey == obj.itemId);
-                                bool isRelativeURI = !obj.baseUrl.ToLower().Contains("http");
-                                Uri baseUri;
-
-                                if (!isRelativeURI)
-                                {
-                                    baseUri = new Uri(obj.baseUrl);
-                                }
-                                else
-                                {
-                                    baseUri = new Uri(obj.baseUrl, UriKind.Relative);
-                                }
+                                var baseUrl = (obj.baseUrl != null) ? obj.baseUrl : BASE_URL;
 
                                 // For new item types, create a new object
                                 if (itemType == null)
@@ -224,8 +248,12 @@ namespace TSS.MVC.Areas.Api.Controllers
                                 itemType.Description = obj.description;
                                 itemType.Subject = obj.subject;
                                 itemType.Grade = obj.grade;
-                                itemType.ExemplarURL = isRelativeURI ? new Uri(baseUri + obj.exemplar, UriKind.Relative).ToString() : new Uri(baseUri, obj.exemplar).AbsoluteUri;
-                                itemType.TrainingGuideURL = isRelativeURI ? new Uri(baseUri + obj.trainingGuide, UriKind.Relative).ToString() : new Uri(baseUri, obj.trainingGuide).AbsoluteUri;
+                                itemType.ExemplarURL = (obj.exemplar != null) ? GetFileLocation(baseUrl, obj.exemplar) : GetDefaultFileLocation(baseUrl, obj.itemId, "TM");                                
+                                itemType.TrainingGuideURL = (obj.trainingGuide != null) ? GetFileLocation(baseUrl, obj.trainingGuide) : GetDefaultFileLocation(baseUrl, obj.itemId, "SG");
+
+                                System.Diagnostics.Debug.WriteLine(string.Format("Exemplar      : {0}", itemType.ExemplarURL));
+                                System.Diagnostics.Debug.WriteLine(string.Format("Training Guide: {0}", itemType.TrainingGuideURL));
+
                                 itemType.RubricListXML = obj.rubricList;
                                 itemType.Layout = obj.Layout;
 
@@ -260,14 +288,16 @@ namespace TSS.MVC.Areas.Api.Controllers
 
                                 //_itemTypeService.Save(itemType);
                             }
+                            fileResult.Success = true;
                         }
                         catch (Exception ex)
                         {
+                            fileResult.Success = false;
                             fileResult.ErrorMessage = ex.Message;
                             LoggerRepository.LogException(ex, "Item Json parsing failed");
                         }
 
-                        fileResult.Success = true;
+                        
                     }
                     else
                     {
