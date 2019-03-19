@@ -23,6 +23,8 @@
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
     <TargetFrameworkProfile />
+    <Use64BitIISExpress />
+    <UseGlobalApplicationHostFile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -151,6 +153,7 @@
     <Compile Include="Areas\Api\ApiAreaRegistration.cs" />
     <Compile Include="Areas\Api\Controllers\TeacherController.cs" />
     <Compile Include="Areas\Api\Controllers\ItemController.cs" />
+    <Compile Include="Areas\Api\Models\ItemDeleteApiResultModel.cs" />
     <Compile Include="Areas\Api\Models\StudentItemsApiResultModel.cs" />
     <Compile Include="Areas\Api\Controllers\TestController.cs" />
     <Compile Include="Areas\Api\Models\ItemGetApiResultModel.cs" />
